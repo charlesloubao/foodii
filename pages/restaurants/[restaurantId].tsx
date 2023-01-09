@@ -1,5 +1,5 @@
 import {GetStaticPaths, GetStaticProps} from "next";
-import {restaurants} from "../../db";
+import {restaurants, supabaseClient} from "../../db";
 import {Restaurant} from "../../lib/Restaurant";
 import {useRouter} from "next/router";
 
@@ -7,9 +7,15 @@ type RestaurantPageProps = {
     restaurant?: Restaurant
 }
 
-export const getStaticProps: GetStaticProps<RestaurantPageProps> = (context) => {
+export const getStaticProps: GetStaticProps<RestaurantPageProps> = async (context) => {
     const restaurantId: string = context.params!.restaurantId as string
-    const restaurant = restaurants.find(restaurant => restaurant.id === restaurantId)
+    const restaurant: Restaurant | null = await supabaseClient.from("restaurants").select()
+        .eq("id", restaurantId)
+        .single()
+        .then(result => result.data ? {
+            ...result.data,
+            menu: []
+        } as Restaurant : null)
 
     if (restaurant == null) {
         return {
@@ -24,9 +30,13 @@ export const getStaticProps: GetStaticProps<RestaurantPageProps> = (context) => 
     }
 }
 
-export const getStaticPaths: GetStaticPaths = (context) => {
+export const getStaticPaths: GetStaticPaths = async (context) => {
+    const restaurantIds: string[] = await supabaseClient.from("restaurants")
+        .select("id")
+        .then(response => response.data?.map(({id}: any) => id) ?? [])
+
     return {
-        paths: restaurants.map(restaurant => `/restaurants/${restaurant.id}`),
+        paths: restaurantIds.map(id => `/restaurants/${id}`),
         fallback: "blocking"
     }
 }

@@ -1,4 +1,6 @@
 import {Restaurant} from "./lib/Restaurant";
+import {createClient} from "@supabase/supabase-js";
+import {supabaseConfig} from "./supabaseConfig";
 
 export const restaurants: Restaurant[] = [
     {
@@ -35,3 +37,5 @@ export const restaurants: Restaurant[] = [
         ]
     }
 ]
+
+export const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.apiKey)

@@ -1,6 +1,8 @@
 import Head from 'next/head'
+import {supabaseConfig} from "../supabaseConfig";
 
 export default function Home() {
+    console.log(supabaseConfig)
     return (
         <>
             <Head>
