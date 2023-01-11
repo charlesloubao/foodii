@@ -18,7 +18,7 @@ export const getStaticProps: GetStaticProps<RestaurantPageProps> = async (contex
         .single()
         .then(result => {
             if (result.error) {
-                throw {message: "An error occurred", cause: result.error}
+                console.error(result.error)
             }
             const restaurant = (result.data as unknown) as Restaurant
             return restaurant
@@ -26,13 +26,14 @@ export const getStaticProps: GetStaticProps<RestaurantPageProps> = async (contex
 
     if (restaurant == null) {
         return {
-            notFound: true
+            notFound: true,
+            revalidate: 1
         }
     }
 
     return {
         props: {
-            restaurant
+            restaurant,
         }
     }
 }
