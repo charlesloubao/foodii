@@ -9,13 +9,20 @@ type RestaurantPageProps = {
 
 export const getStaticProps: GetStaticProps<RestaurantPageProps> = async (context) => {
     const restaurantId: string = context.params!.restaurantId as string
-    const restaurant: Restaurant | null = await supabaseClient.from("restaurants").select()
+    const restaurant: Restaurant | null = await supabaseClient.from("restaurants")
+        .select('id, name, description, imageURL:image_url,' +
+            'menu:menu_categories(id, name, description,' +
+            'items:menu_items(id, name, description, imageURL:image_url, price))')
+
         .eq("id", restaurantId)
         .single()
-        .then(result => result.data ? {
-            ...result.data,
-            menu: []
-        } as Restaurant : null)
+        .then(result => {
+            if (result.error) {
+                throw {message: "An error occurred", cause: result.error}
+            }
+            const restaurant = (result.data as unknown) as Restaurant
+            return restaurant
+        })
 
     if (restaurant == null) {
         return {
@@ -62,6 +69,9 @@ export default function RestaurantPage({restaurant}: RestaurantPageProps) {
 
                 <div>
                     {category.items.map(item => <div key={item.id}>
+                        <div>
+                            {item.imageURL != null && <img src={item.imageURL} alt="" width={100} height={100}/>}
+                        </div>
                         <h4>{item.name}</h4>
                         <p>{item.description}</p>
                         <strong>${item.price}</strong>

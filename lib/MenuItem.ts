@@ -3,4 +3,5 @@ export type MenuItem = {
     name: string,
     description: string,
     price: number
+    imageURL?: string
 }
