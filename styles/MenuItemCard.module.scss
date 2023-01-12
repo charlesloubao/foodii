@@ -1,0 +1,29 @@
+.container {
+  @apply border hover:border-2 hover:border-gray-300 cursor-pointer rounded-md p-4 flex gap-4 items-center relative;
+
+  .addToOrderButton {
+    @apply absolute bottom-0 right-0 m-2 hidden;
+  }
+
+  &:hover {
+    .addToOrderButton {
+      @apply block
+    }
+  }
+}
+
+.name {
+  @apply font-bold mb-1;
+}
+
+.description {
+  @apply mb-1;
+}
+
+.imageContainer {
+  @apply w-[100px] h-[100px] rounded-md object-cover overflow-hidden;
+
+  img {
+    @apply w-full h-full;
+  }
+}

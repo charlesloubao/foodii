@@ -1,16 +1,18 @@
-import {Menu, ShoppingCart, } from "lucide-react";
+import {Menu, ShoppingCart,} from "lucide-react";
+import Link from "next/link";
+import CartButton from "./CartButton";
+import {useAppSelector} from "../state/store";
 
 export default function Navbar() {
-    return <div>
-        <div className="px-4 py-2 border-b flex items-center justify-between">
-            <div className="flex items-center gap-4">
-                <Menu/>
-                <span className="font-extrabold text-lg text-green-700 tracking-widest">FOODII</span>
-            </div>
-            <div className="inline-flex items-center gap-2 bg-green-700 text-white px-4 py-2 rounded-full">
-                <ShoppingCart/>
-                <div className="font-bold">0</div>
+    return <>
+        <div>
+            <div className="px-4 py-2 border-b flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Menu/>
+                    <Link href="/" className="font-extrabold text-lg text-green-700 tracking-widest">FOODII</Link>
+                </div>
+                <CartButton/>
             </div>
         </div>
-    </div>
+    </>
 }

@@ -12,7 +12,7 @@ export default function PopularRestaurantList() {
         try {
             setLoading(true)
 
-            const data = await supabaseClient.from("restaurants").select()
+            const data = await supabaseClient.from("restaurants").select("id, name, description, imageURL:image_url")
                 .order("created_at", {ascending: false})
                 .then(response => response.data as Restaurant[] ?? [])
 
@@ -35,12 +35,17 @@ export default function PopularRestaurantList() {
         return <>{error}</>
     }
 
-    return <div className="grid md:grid-cols-2">
+    return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         {restaurants?.map(restaurant => <div key={restaurant.id}>
             <Link href={`/restaurants/${restaurant.id}`}>
-                <div className="w-full aspect-video bg-gray-400 rounded-md mb-2"></div>
-                <h2 className="heading-2 mb-1">{restaurant.name}</h2>
-                <p>{restaurant.description}</p>
+                <div className="hover:bg-gray-100 p-4 rounded-md">
+                    <div className="w-full aspect-video bg-gray-400 rounded-md mb-2 overflow-hidden object-fit">
+                        <img src={restaurant.imageURL} className="w-full h-full" alt={""}/>
+                    </div>
+                    <h2 className="heading-2 mb-1">{restaurant.name}</h2>
+                    <p>{restaurant.description}</p>
+
+                </div>
             </Link>
         </div>)}
     </div>

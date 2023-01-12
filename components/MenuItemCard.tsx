@@ -1,19 +1,31 @@
 import {MenuItem} from "../lib/MenuItem";
+import Styles from '../styles/MenuItemCard.module.scss'
+import Button from "./Button";
+import {useAppDispatch} from "../state/store";
+import {addToCart} from "../state/features/cart/cartReducer";
 
 export type MenuItemCardProps = {
     item: MenuItem
 }
 export default function MenuItemCard({item}: MenuItemCardProps) {
+    const dispatch = useAppDispatch()
+
+    function onAddToCart() {
+        dispatch(addToCart(item))
+    }
+
     return <div
-        className="border hover:border-2 hover:border-gray-300 cursor-pointer rounded-md p-4 flex gap-4 items-center"
+        onClick={onAddToCart}
+        className={Styles.container}
         key={item.id}>
         <div className="flex-1">
-            <h4 className="font-bold mb-1">{item.name}</h4>
-            <p className="mb-1">{item.description}</p>
+            <h4 className={Styles.name}>{item.name}</h4>
+            <p className={Styles.description}>{item.description}</p>
             <strong>${item.price}</strong>
         </div>
-        <div className="w-[100px] h-[100px] rounded-md object-cover overflow-hidden">
-            {item.imageURL != null && <img className="w-full h-full" src={item.imageURL} alt=""/>}
+        <div className={Styles.imageContainer}>
+            {item.imageURL != null && <img src={item.imageURL} alt=""/>}
         </div>
+        <Button className={Styles.addToOrderButton}>Add</Button>
     </div>
 }
