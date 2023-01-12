@@ -35,12 +35,13 @@ export default function PopularRestaurantList() {
         return <>{error}</>
     }
 
-    return <div>
+    return <div className="grid md:grid-cols-2">
         {restaurants?.map(restaurant => <div key={restaurant.id}>
             <Link href={`/restaurants/${restaurant.id}`}>
-                <h3>{restaurant.name}</h3>
+                <div className="w-full aspect-video bg-gray-400 rounded-md mb-2"></div>
+                <h2 className="heading-2 mb-1">{restaurant.name}</h2>
+                <p>{restaurant.description}</p>
             </Link>
-            <p>{restaurant.description}</p>
         </div>)}
     </div>
 }

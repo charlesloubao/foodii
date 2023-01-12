@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #__next {
+  @apply w-full h-full
+}
+
+.heading-1 {
+  @apply text-4xl font-bold
+}
+
+.heading-2 {
+  @apply text-2xl font-bold
+}
+
+.heading-3 {
+  @apply text-xl font-bold
+}
+
+.app-container {
+  @apply w-full p-4 lg:p-8 lg:px-64
+}

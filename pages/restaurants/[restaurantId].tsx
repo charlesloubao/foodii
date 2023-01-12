@@ -2,6 +2,7 @@ import {GetStaticPaths, GetStaticProps} from "next";
 import {restaurants, supabaseClient} from "../../db";
 import {Restaurant} from "../../lib/Restaurant";
 import {useRouter} from "next/router";
+import MenuItemCard from "../../components/MenuItemCard";
 
 type RestaurantPageProps = {
     restaurant?: Restaurant
@@ -58,27 +59,24 @@ export default function RestaurantPage({restaurant}: RestaurantPageProps) {
         return <></>
     }
 
-    return <>
-        <img src={restaurant.imageURL} width={100} height={100} alt={""}/>
-        <h1>{restaurant.name}</h1>
-        <p>{restaurant.description}</p>
-        <h2>Menu</h2>
-        {
-            restaurant.menu.map(category => <div key={category.id}>
-                <h3>{category.name}</h3>
-                <p>{category.description}</p>
+    return <div className="app-container">
+        <img src={restaurant.imageURL} className="mb-4 w-[100px] h-[100px] rounded-full object-cover" alt={""}/>
+        <div className="mb-6">
+            <h1 className="heading-1 mb-2">{restaurant.name}</h1>
+            <p>{restaurant.description}</p>
+        </div>
+        <div>
+            <h2 className="heading-2 mb-4">Menu</h2>
+            {
+                restaurant.menu.map(category => <div key={category.id}>
+                    <h3 className="heading-3 mb-1">{category.name}</h3>
+                    <p className="mb-4">{category.description}</p>
 
-                <div>
-                    {category.items.map(item => <div key={item.id}>
-                        <div>
-                            {item.imageURL != null && <img src={item.imageURL} alt="" width={100} height={100}/>}
-                        </div>
-                        <h4>{item.name}</h4>
-                        <p>{item.description}</p>
-                        <strong>${item.price}</strong>
-                    </div>)}
-                </div>
-            </div>)
-        }
-    </>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {category.items.map(item => <MenuItemCard key={item.id} item={item}/>)}
+                    </div>
+                </div>)
+            }
+        </div>
+    </div>
 }
