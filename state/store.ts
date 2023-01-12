@@ -1,10 +1,12 @@
 import {configureStore} from "@reduxjs/toolkit";
 import cartReducer from "./features/cart/cartReducer";
 import {TypedUseSelectorHook, useDispatch, useSelector} from "react-redux";
+import servicesReducer from "./features/services/servicesReducer";
 
 export const store = configureStore({
     reducer: {
         cart: cartReducer,
+        services: servicesReducer
     }
 })
 

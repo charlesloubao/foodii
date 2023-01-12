@@ -3,7 +3,7 @@ import {X} from "lucide-react";
 import {MenuItem} from "../lib/MenuItem";
 import {useAppDispatch} from "../state/store";
 
-export default function CartItem({item, index}: { item: MenuItem, index: number }) {
+export default function CartItem({item, removable, index}: { removable?: boolean, item: MenuItem, index: number }) {
     const dispatch = useAppDispatch()
 
     return <div
@@ -29,9 +29,9 @@ export default function CartItem({item, index}: { item: MenuItem, index: number 
             </div>
 
         </div>
-        <div>
+        {removable && <div>
             <button className="inline-block bg-gray-200 w-[32px] h-[32px] rounded-full flex items-center justify-center"
                     onClick={() => dispatch(removeFromCart(index))}><X width={18}/></button>
-        </div>
+        </div>}
     </div>
 }

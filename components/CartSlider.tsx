@@ -3,13 +3,23 @@ import {removeFromCart, toggleCart} from "../state/features/cart/cartReducer";
 import {useAppDispatch, useAppSelector} from "../state/store";
 import CartItem from "./CartItem";
 import Button from "./Button";
+import React, {ReactNode} from "react";
+import {useRouter} from "next/router";
+import OrderSummaryText from "./OrderSummaryText";
 
 export default function CartSlider() {
+    const router = useRouter()
+
     const cart = useAppSelector(state => state.cart)
     const dispatch = useAppDispatch()
 
     function onToggleCartClick() {
         dispatch(toggleCart())
+    }
+
+    function onCheckoutClick() {
+        dispatch(toggleCart())
+        router.push("/checkout")
     }
 
     return <>
@@ -22,11 +32,13 @@ export default function CartSlider() {
                 </div>
                 <div className="flex-1 pl-8 p-4 overflow-y-auto overflow-x-hidden border-b">
                     {cart.items.map((item, index) => (
-                        <CartItem key={`cart_item_${index}`} item={item} index={index}/>))}
+                        <CartItem removable={true} key={`cart_item_${index}`} item={item} index={index}/>))}
                 </div>
                 <div className="p-4">
                     <h2 className="text-xl font-bold mb-4">Summary</h2>
-                    <Button className="flex items-center justify-between w-full ">
+                    {/* eslint-disable-next-line react/jsx-no-undef */}
+                    <OrderSummaryText/>
+                    <Button onClick={onCheckoutClick} className="flex items-center justify-between w-full ">
                         <span>Checkout</span>
                         <span>${cart.total}</span>
                     </Button>
@@ -35,3 +47,4 @@ export default function CartSlider() {
         </div>}
     </>
 }
+
