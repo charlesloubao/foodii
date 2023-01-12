@@ -3,6 +3,7 @@ import Styles from '../styles/MenuItemCard.module.scss'
 import Button from "./Button";
 import {useAppDispatch} from "../state/store";
 import {addToCart} from "../state/features/cart/cartReducer";
+import {openModal} from "../state/features/modal/modalReducer";
 
 export type MenuItemCardProps = {
     item: MenuItem
@@ -11,7 +12,10 @@ export default function MenuItemCard({item}: MenuItemCardProps) {
     const dispatch = useAppDispatch()
 
     function onAddToCart() {
-        dispatch(addToCart(item))
+        dispatch(openModal({
+            type: "add-to-cart",
+            data: item
+        }))
     }
 
     return <div

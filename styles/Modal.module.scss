@@ -1,0 +1,22 @@
+.container {
+  @apply bg-white
+  flex flex-col
+  rounded-md
+  max-w-full
+  max-h-full
+  md:min-w-[50%]
+  md:max-w-[50%]
+  xl:min-w-[25%]
+  xl:max-w-[25%];
+
+  .topBar {
+    @apply flex items-center p-4 border-b;
+  }
+
+  .bottomBar {
+    @apply p-4 border-t;
+  }
+  .content {
+    @apply flex-1 p-4 overflow-auto;
+  }
+}
