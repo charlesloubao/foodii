@@ -1,4 +1,3 @@
-import {createReducer} from "@reduxjs/toolkit/src";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 const errorReducer = createSlice({

@@ -1,7 +1,6 @@
-import {MenuItem} from "../../../data/MenuItem";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import update from 'immutability-helper';
-import {CartItem, CartItemDTO} from "../../../data/CartItem";
+import {CartItem} from "../../../data/CartItem";
 
 export type CartState = {
     items: CartItem[],
