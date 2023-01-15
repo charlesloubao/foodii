@@ -1,4 +1,4 @@
-import {Restaurant} from "./lib/Restaurant";
+import {Restaurant} from "./data/Restaurant";
 import {createClient} from "@supabase/supabase-js";
 import {supabaseConfig} from "./supabaseConfig";
 

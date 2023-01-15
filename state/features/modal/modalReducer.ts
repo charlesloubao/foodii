@@ -1,4 +1,4 @@
-import {MenuItem} from "../../../lib/MenuItem";
+import {MenuItem} from "../../../data/MenuItem";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 

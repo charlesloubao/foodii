@@ -3,9 +3,11 @@ import cartReducer from "./features/cart/cartReducer";
 import {TypedUseSelectorHook, useDispatch, useSelector} from "react-redux";
 import servicesReducer from "./features/services/servicesReducer";
 import modalReducer from "./features/modal/modalReducer";
+import errorReducer from "./features/error/errorReducer";
 
 export const store = configureStore({
     reducer: {
+        error: errorReducer,
         modal: modalReducer,
         cart: cartReducer,
         services: servicesReducer

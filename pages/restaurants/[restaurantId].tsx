@@ -1,6 +1,6 @@
 import {GetStaticPaths, GetStaticProps} from "next";
 import {restaurants, supabaseClient} from "../../db";
-import {Restaurant} from "../../lib/Restaurant";
+import {Restaurant} from "../../data/Restaurant";
 import {useRouter} from "next/router";
 import MenuItemCard from "../../components/MenuItemCard";
 

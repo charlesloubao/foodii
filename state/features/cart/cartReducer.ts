@@ -1,9 +1,10 @@
-import {MenuItem} from "../../../lib/MenuItem";
+import {MenuItem} from "../../../data/MenuItem";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import update from 'immutability-helper';
+import {CartItem, CartItemDTO} from "../../../data/CartItem";
 
 export type CartState = {
-    items: MenuItem[],
+    items: CartItem[],
     total: number,
     showCart: boolean
 }
@@ -21,12 +22,12 @@ export const cartSlice = createSlice({
         toggleCart(state: CartState) {
             state.showCart = !state.showCart
         },
-        addToCart(state: CartState, action: PayloadAction<MenuItem>) {
+        addToCart(state: CartState, action: PayloadAction<CartItem>) {
             const items = update(state.items, {
                 $push: [action.payload]
             })
             state.items = items
-            state.total = items.reduce((previousValue, item) => previousValue + item.price, 0)
+            state.total = items.reduce((previousValue, item) => previousValue + item.subtotal, 0)
         },
 
         removeFromCart(state: CartState, action: PayloadAction<number>) {
@@ -34,7 +35,7 @@ export const cartSlice = createSlice({
                 $splice: [[action.payload, 1]]
             })
             state.items = items
-            state.total = items.reduce((previousValue, item) => previousValue + item.price, 0)
+            state.total = items.reduce((previousValue, item) => previousValue + item.subtotal, 0)
         }
     }
 })

@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Restaurant} from "../lib/Restaurant";
+import {Restaurant} from "../data/Restaurant";
 import {supabaseClient} from "../db";
 import Link from "next/link";
 

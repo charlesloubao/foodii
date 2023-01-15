@@ -1,4 +1,4 @@
-import {MenuItem} from "../lib/MenuItem";
+import {MenuItem} from "../data/MenuItem";
 import Styles from '../styles/MenuItemCard.module.scss'
 import Button from "./Button";
 import {useAppDispatch} from "../state/store";

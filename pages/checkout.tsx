@@ -5,7 +5,7 @@ import AppLogo from "../components/AppLogo";
 import Button from "../components/Button";
 import TextField from "../components/TextField";
 import {useAppDispatch, useAppSelector} from "../state/store";
-import CartItem from "../components/CartItem";
+import CartListItem from "../components/CartListItem";
 import OrderSummaryText from "../components/OrderSummaryText";
 import {useState} from "react";
 
@@ -112,7 +112,7 @@ export default function Checkout() {
             <div className="lg:flex-1 p-4 rounded-md border md:border-0 mx-4 md:m-0">
                 <h2 className="heading-2 mb-6">Order summary</h2>
                 {cart.items.map((item, index) => (
-                    <CartItem key={`cart_item_${index}`} item={item} index={index}/>))}
+                    <CartListItem key={`cart_item_${index}`} item={item} index={index}/>))}
 
                 <OrderSummaryText/>
             </div>

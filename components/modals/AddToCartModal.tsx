@@ -1,23 +1,36 @@
 import {closeModal} from "../../state/features/modal/modalReducer";
 import {Minus, Plus, X} from "lucide-react";
 import {useAppDispatch} from "../../state/store";
-import {MenuItem} from "../../lib/MenuItem";
+import {MenuItem} from "../../data/MenuItem";
 import Styles from '../../styles/Modal.module.scss'
 import ModalTopBar from "../ModalTopBar";
 import Button from "../Button";
 import {useMemo, useState} from "react";
 import {addToCart} from "../../state/features/cart/cartReducer";
+import {CartItem, CartItemDTO} from "../../data/CartItem";
+import axios from "axios";
+import {onError} from "../../state/features/error/errorReducer";
 
 export default function AddToCartModal({item}: { item: MenuItem }) {
     const dispatch = useAppDispatch()
     const [quantity, setQuantity] = useState<number>(1)
     const finalPrice = useMemo<number>(() => item.price * quantity, [quantity, item.price])
 
-    function onAddClick() {
-        for(let i = 0; i < quantity; i++) {
-            dispatch(addToCart(item))
+    async function onAddClick() {
+        try {
+            const data: CartItemDTO = {
+                itemId: item.id,
+                quantity
+            }
+            const cartItem = await axios.put<CartItem>("/api/cart", data)
+                .then(response => response.data)
+
+            dispatch(addToCart(cartItem))
+            dispatch(closeModal())
         }
-        dispatch(closeModal())
+        catch (e) {
+            dispatch(onError(e as Error))
+        }
     }
 
     return <div className={Styles.container}>

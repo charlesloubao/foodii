@@ -1,7 +1,7 @@
 import {X} from "lucide-react";
 import {removeFromCart, toggleCart} from "../state/features/cart/cartReducer";
 import {useAppDispatch, useAppSelector} from "../state/store";
-import CartItem from "./CartItem";
+import CartListItem from "./CartListItem";
 import Button from "./Button";
 import React, {ReactNode} from "react";
 import {useRouter} from "next/router";
@@ -32,7 +32,7 @@ export default function CartSlider() {
                 </div>
                 <div className="flex-1 pl-8 p-4 overflow-y-auto overflow-x-hidden border-b">
                     {cart.items.map((item, index) => (
-                        <CartItem removable={true} key={`cart_item_${index}`} item={item} index={index}/>))}
+                        <CartListItem removable={true} key={`cart_item_${index}`} item={item} index={index}/>))}
                 </div>
                 <div className="p-4">
                     <h2 className="text-xl font-bold mb-4">Summary</h2>
