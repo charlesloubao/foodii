@@ -3,11 +3,13 @@ import {MenuItem} from "./MenuItem";
 export type CartItem = {
     id: string,
     quantity: number,
-    item: MenuItem
+    menuItem: MenuItem
     subtotal: number
 }
 
-export type CartItemDTO = {
-    quantity: number,
-    itemId: string,
+export type UpdateCartDTO = {
+    addItem?: {
+        quantity: number,
+        menuItemId: string,
+    }
 }

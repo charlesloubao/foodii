@@ -3,9 +3,12 @@ import {restaurants, supabaseClient} from "../../db";
 import {Restaurant} from "../../data/Restaurant";
 import {useRouter} from "next/router";
 import MenuItemCard from "../../components/MenuItemCard";
+import {useEffect} from "react";
+import {useAppDispatch} from "../../state/store";
+import {setCurrentRestaurant} from "../../state/features/cart/cartReducer";
 
 type RestaurantPageProps = {
-    restaurant?: Restaurant
+    restaurant: Restaurant | null
 }
 
 export const getStaticProps: GetStaticProps<RestaurantPageProps> = async (context) => {
@@ -52,6 +55,11 @@ export const getStaticPaths: GetStaticPaths = async (context) => {
 
 export default function RestaurantPage({restaurant}: RestaurantPageProps) {
     const router = useRouter()
+    const dispatch = useAppDispatch()
+
+    useEffect(() => {
+        dispatch(setCurrentRestaurant(restaurant))
+    }, [restaurant])
 
     if (router.isFallback) {
         return <div>Loading please wait</div>

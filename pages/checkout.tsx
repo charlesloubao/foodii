@@ -8,6 +8,7 @@ import {useAppDispatch, useAppSelector} from "../state/store";
 import CartListItem from "../components/CartListItem";
 import OrderSummaryText from "../components/OrderSummaryText";
 import {useState} from "react";
+import axios from "axios";
 
 export default function Checkout() {
     const [placingOrder, setPlacingOrder] = useState<boolean>(false)
@@ -55,12 +56,22 @@ export default function Checkout() {
         setPlacingOrder(true)
 
         try {
-            const orderId = await orderService.placeOrder(order)
-            window.location.replace("/track-order?orderId=" + orderId)
+            const {id} = await axios.post("/api/place-order")
+                .then(response => response.data)
+
+            window.location.replace("/track-order?orderId=" + id)
+
+            setPlacingOrder(false)
         } catch (e) {
             alert("An error occurred")
             setPlacingOrder(false)
         }
+    }
+
+    if (cart.cartLoading) {
+        return <div>Loading...</div>
+    } else if (cart.data == null) {
+        return <></>
     }
 
     return <div className="w-full h-full flex flex-col">
@@ -111,7 +122,7 @@ export default function Checkout() {
             </div>
             <div className="lg:flex-1 p-4 rounded-md border md:border-0 mx-4 md:m-0">
                 <h2 className="heading-2 mb-6">Order summary</h2>
-                {cart.items.map((item, index) => (
+                {cart.data!.items.map((item, index) => (
                     <CartListItem key={`cart_item_${index}`} item={item} index={index}/>))}
 
                 <OrderSummaryText/>

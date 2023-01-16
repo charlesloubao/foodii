@@ -1,44 +1,42 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import update from 'immutability-helper';
 import {CartItem} from "../../../data/CartItem";
+import {Cart} from "../../../data/Cart";
+import {Restaurant} from "../../../data/Restaurant";
 
 export type CartState = {
-    items: CartItem[],
-    total: number,
-    showCart: boolean
+    data: Cart | null,
+    cartLoading: boolean,
+    showCart: boolean,
+    currentRestaurant: Restaurant | null
 }
 
 const initialState: CartState = {
-    items: [],
-    total: 0,
-    showCart: false
+    data: null,
+    cartLoading: true,
+    showCart: false,
+    currentRestaurant: null
 }
 
 export const cartSlice = createSlice({
     name: "cart",
     initialState,
     reducers: {
+        setCartLoading(state: CartState, action: PayloadAction<boolean>) {
+            state.cartLoading = action.payload
+        },
+        setCurrentRestaurant(state: CartState, action: PayloadAction<Restaurant | null>) {
+            state.currentRestaurant = action.payload
+        },
+        onCartUpdated(state: CartState, action: PayloadAction<Cart>) {
+            state.data = action.payload
+        },
         toggleCart(state: CartState) {
             state.showCart = !state.showCart
         },
-        addToCart(state: CartState, action: PayloadAction<CartItem>) {
-            const items = update(state.items, {
-                $push: [action.payload]
-            })
-            state.items = items
-            state.total = items.reduce((previousValue, item) => previousValue + item.subtotal, 0)
-        },
-
-        removeFromCart(state: CartState, action: PayloadAction<number>) {
-            const items = update(state.items, {
-                $splice: [[action.payload, 1]]
-            })
-            state.items = items
-            state.total = items.reduce((previousValue, item) => previousValue + item.subtotal, 0)
-        }
     }
 })
 
-export const {addToCart, removeFromCart, toggleCart} = cartSlice.actions
+export const {onCartUpdated, setCartLoading, setCurrentRestaurant, toggleCart} = cartSlice.actions
 
 export default cartSlice.reducer
