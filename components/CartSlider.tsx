@@ -43,7 +43,7 @@ export default function CartSlider() {
                             <OrderSummaryText/>
                             <Button onClick={onCheckoutClick} className="flex items-center justify-between w-full ">
                                 <span>Checkout</span>
-                                <span>${cart.data.total}</span>
+                                <span>${cart.data.subtotal}</span>
                             </Button>
                         </div>
                     </>

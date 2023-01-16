@@ -28,7 +28,7 @@ export const cartSlice = createSlice({
         setCurrentRestaurant(state: CartState, action: PayloadAction<Restaurant | null>) {
             state.currentRestaurant = action.payload
         },
-        onCartUpdated(state: CartState, action: PayloadAction<Cart>) {
+        onCartUpdated(state: CartState, action: PayloadAction<Cart | null>) {
             state.data = action.payload
         },
         toggleCart(state: CartState) {

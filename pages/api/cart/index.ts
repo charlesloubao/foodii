@@ -4,6 +4,11 @@ import {Cart, CartDTO} from "../../../data/Cart";
 import {serialize, CookieSerializeOptions} from 'cookie'
 import {CartItem, UpdateCartDTO} from "../../../data/CartItem";
 
+export type GetCartResponse = {
+    hasCart: boolean,
+    cart: Cart | null
+}
+
 async function createCart(req: NextApiRequest, res: NextApiResponse) {
     const data: CartDTO = req.body
     const supabaseClient = createServerSupabaseClient({req, res})
@@ -11,7 +16,7 @@ async function createCart(req: NextApiRequest, res: NextApiResponse) {
     const response = await supabaseClient.from("carts")
         .insert([
             {
-                "restaurant_id": data.restaurantId
+                "restaurant_id": data.restaurantId,
             }
         ])
         .select("id")
@@ -30,24 +35,48 @@ async function createCart(req: NextApiRequest, res: NextApiResponse) {
     res.status(204).end()
 }
 
-async function getCart(req: NextApiRequest, res: NextApiResponse<Cart>) {
+async function getCart(req: NextApiRequest, res: NextApiResponse<GetCartResponse>) {
     const cartId = req.cookies.cartId
 
     if (cartId == null) {
-        res.status(404).end()
+        return res.send({
+            hasCart: false,
+            cart: null
+        })
     }
 
     const client = createServerSupabaseClient({req, res})
-    const data: any = await client.from("carts").select("id, total, restaurant:restaurants(id,name, imageURL:image_url)," +
-        "items:cart_items(id, quantity, subtotal, menuItem:menu_items(name, description, imageURL:image_url,price))")
+    const data: Cart = await client.from("carts").select("id, restaurant:restaurants(id,name, imageURL:image_url)," +
+        "items:cart_items(id, quantity, menuItem:menu_items(name, description, imageURL:image_url, price))")
         .eq("id", cartId)
-        .single()
+        .maybeSingle()
         .then(({error, data}) => {
             if (error) throw  error
-            return data
+            return data as unknown as Cart
         })
+        .then()
 
-    res.send(data as unknown as Cart)
+    if (data == null) {
+        res.setHeader("Set-Cookie", serialize("cartId", "", {
+            maxAge: 0
+        }))
+        return res.send({
+            hasCart: false,
+            cart: null
+        })
+    }
+
+    data.items = data.items.map(item => ({
+        ...item,
+        subtotal: item.quantity * item.menuItem.price
+    }))
+
+    data.subtotal = data.items.reduce((subtotal, item) => subtotal + item.subtotal, 0)
+
+    res.send({
+        hasCart: true,
+        cart: data
+    })
 
 }
 
@@ -60,7 +89,6 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const client = createServerSupabaseClient({req, res})
-    let cart: Cart
 
     let result = await client.from("carts").select("id, restaurantId:restaurant_id")
         .eq("id", cartId)
@@ -91,12 +119,21 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
             menu_item_id: menuItemId,
             cart_id: cartId,
             quantity,
-            subtotal: item.price * quantity
-        }).then(({error}) => {
-            if (error) throw error
         })
+            .then()
+            .then(({error}) => {
+                if (error) throw error
+            })
 
         res.status(200).end()
+    } else if (body.removeItem != null) {
+        await client.from("cart_items")
+            .delete()
+            .eq("id", body.removeItem.cartItemId)
+            .then(({error, data}) => {
+                if (error) throw error
+            })
+        res.status(204).end()
     } else {
         res.status(400).end()
     }

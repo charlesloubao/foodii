@@ -11,5 +11,8 @@ export type UpdateCartDTO = {
     addItem?: {
         quantity: number,
         menuItemId: string,
+    },
+    removeItem?: {
+        cartItemId: string,
     }
 }

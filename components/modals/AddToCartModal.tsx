@@ -29,10 +29,8 @@ export default function AddToCartModal({item}: { item: MenuItem }) {
                 let newCart: CartDTO = {
                     restaurantId: cart.currentRestaurant!.id
                 }
-                let cartData = await axios.post<Cart>("/api/cart", newCart)
+                await axios.post<Cart>("/api/cart", newCart)
                     .then(response => response.data)
-
-                dispatch(onCartUpdated(cartData))
             }
 
             const data: UpdateCartDTO = {

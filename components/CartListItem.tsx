@@ -1,15 +1,29 @@
 import {X} from "lucide-react";
 import {useAppDispatch} from "../state/store";
-import {CartItem} from "../data/CartItem";
-
+import {CartItem, UpdateCartDTO} from "../data/CartItem";
+import {onError} from "../state/features/error/errorReducer";
+import axios from "axios";
+import useSWR from "swr";
 
 
 export default function CartListItem({item, removable, index}: { removable?: boolean, item: CartItem, index: number }) {
+    const cartSWR = useSWR("/api/cart")
     const dispatch = useAppDispatch()
 
-    function removeFromCart() {
-
+    async function removeFromCart() {
+        try {
+            const data: UpdateCartDTO = {
+                removeItem: {
+                    cartItemId: item.id
+                }
+            }
+            await axios.put("/api/cart", data)
+            cartSWR.mutate()
+        } catch (e: any) {
+            dispatch(onError(e))
+        }
     }
+
     return <div
         className={"flex items-start gap-4 mb-4"}>
         <div className="relative">
