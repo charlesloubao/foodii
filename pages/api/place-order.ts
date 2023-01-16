@@ -33,11 +33,10 @@ const handler: NextApiHandler = async (req, res) => {
             total: 0,
             subtotal: 0,
             status: "received"
-        }).select("*")
-        .single()
+        }).select()
         .then(({error, data}) => {
             if (error) throw error
-            return data
+            return data[0]
         })
 
     res.setHeader("Set-Cookie", serialize("cartId", "", {
