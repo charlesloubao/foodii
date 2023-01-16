@@ -14,6 +14,7 @@ const handler: NextApiHandler = async (req, res) => {
 
     const cart = await dbClient.from("carts")
         .select("id, restaurantId: restaurant_id, items:cart_items(id, quantity, menuItem:menu_items(id,price))")
+        .eq("id", cartId)
         .single()
         .then(({data, error}) => {
             if (error) throw error
@@ -34,9 +35,10 @@ const handler: NextApiHandler = async (req, res) => {
             subtotal: 0,
             status: "received"
         }).select()
+        .single()
         .then(({error, data}) => {
             if (error) throw error
-            return data[0]
+            return data
         })
 
     res.setHeader("Set-Cookie", serialize("cartId", "", {
