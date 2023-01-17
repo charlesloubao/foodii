@@ -10,7 +10,6 @@ export const store = configureStore({
         error: errorReducer,
         modal: modalReducer,
         cart: cartReducer,
-        services: servicesReducer
     }
 })
 
