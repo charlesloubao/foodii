@@ -3,14 +3,12 @@ import {Cart} from "./Cart";
 
 export type OrderStatus =
     "received"
-    | "confirmed"
-    | "enroute_to_pickup"
-    | "picked_up"
-    | "enroute_to_dropoff"
+    | "out_for_delivery"
     | "delivered"
 
 export type Order = {
     id: string,
+    createdAt: string,
     restaurant: Restaurant,
     cart: Cart,
     status: OrderStatus

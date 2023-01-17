@@ -1,21 +1,17 @@
 import {useSelector} from "react-redux";
 import {useAppSelector} from "../state/store";
 import {ReactNode} from "react";
+import {Cart} from "../data/Cart";
 
-export default function OrderSummaryText() {
-    const cart = useAppSelector(state => state.cart)
-
-    if (cart.data == null) {
-        return <></>
-    }
+export default function OrderSummaryText({cart}: { cart: Cart }) {
 
     return <div>
-        <SummaryEntry label={"Subtotal"} value={<span>${cart.data.subtotal}</span>}/>
+        <SummaryEntry label={"Subtotal"} value={<span>${cart.subtotal}</span>}/>
         <SummaryEntry label={"Delivery fee"} value={<span>$0</span>}/>
         <SummaryEntry label={"Tax"} value={<span>${0}</span>}/>
         <div className="mt-4">
             <SummaryEntry label={<span className="text-lg font-bold">Total</span>}
-                          value={<span className="text-lg font-bold">${cart.data.subtotal}</span>}/>
+                          value={<span className="text-lg font-bold">${cart.subtotal}</span>}/>
         </div>
     </div>
 }

@@ -123,7 +123,7 @@ export default function Checkout() {
                 {cart.data!.items.map((item, index) => (
                     <CartListItem key={`cart_item_${index}`} item={item} index={index}/>))}
 
-                <OrderSummaryText/>
+                <OrderSummaryText cart={cart.data}/>
             </div>
             <div className="p-4 block lg:hidden">
                 <Button disabled={placingOrder} onClick={onPlaceOrderClick} className="w-full">

@@ -40,7 +40,7 @@ export default function CartSlider() {
                         <div className="p-4">
                             <h2 className="text-xl font-bold mb-4">Summary</h2>
                             {/* eslint-disable-next-line react/jsx-no-undef */}
-                            <OrderSummaryText/>
+                            <OrderSummaryText cart={cart.data}/>
                             <Button onClick={onCheckoutClick} className="flex items-center justify-between w-full ">
                                 <span>Checkout</span>
                                 <span>${cart.data.subtotal}</span>
