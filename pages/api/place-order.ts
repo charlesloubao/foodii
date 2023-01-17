@@ -12,8 +12,8 @@ const handler: NextApiHandler = async (req, res) => {
 
     const dbClient = createServerSupabaseClient({req, res})
 
-    const cart = await dbClient.from("carts")
-        .select("id, restaurantId: restaurant_id, items:cart_items(id, quantity, menuItem:menu_items(id,price))")
+    const cart: Cart = await dbClient.from("carts")
+        .select("id, subtotal, restaurantId: restaurant_id, items:cart_items(id, quantity, menuItem:menu_items(id,price))")
         .eq("id", cartId)
         .single()
         .then(({data, error}) => {
@@ -29,10 +29,9 @@ const handler: NextApiHandler = async (req, res) => {
         .insert({
             fees,
             taxes,
-            restaurant_id: cart.restaurantId,
+            subtotal: cart.subtotal,
+            restaurant_id: cart.restaurantId!,
             cart_id: cartId,
-            total: 0,
-            subtotal: 0,
             status: "received"
         }).select()
         .single()

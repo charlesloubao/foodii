@@ -24,8 +24,6 @@ export default function Checkout() {
     const router = useRouter()
 
     const cart = useAppSelector(state => state.cart)
-    const {orderService} = useAppSelector(state => state.services)
-
     const dispatch = useAppDispatch()
 
     async function onPlaceOrderClick() {

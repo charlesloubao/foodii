@@ -3,6 +3,7 @@ import {NextApiHandler, NextApiRequest, NextApiResponse} from "next";
 import {Cart, CartDTO} from "../../../data/Cart";
 import {serialize, CookieSerializeOptions} from 'cookie'
 import {CartItem, UpdateCartDTO} from "../../../data/CartItem";
+import {MenuItem} from "../../../data/MenuItem";
 
 export type GetCartResponse = {
     hasCart: boolean,
@@ -17,6 +18,7 @@ async function createCart(req: NextApiRequest, res: NextApiResponse) {
         .insert([
             {
                 "restaurant_id": data.restaurantId,
+                subtotal: 0
             }
         ])
         .select("id")
@@ -46,8 +48,8 @@ async function getCart(req: NextApiRequest, res: NextApiResponse<GetCartResponse
     }
 
     const client = createServerSupabaseClient({req, res})
-    const data: Cart = await client.from("carts").select("id, restaurant:restaurants(id,name, imageURL:image_url)," +
-        "items:cart_items(id, quantity, menuItem:menu_items(name, description, imageURL:image_url, price))")
+    const data: Cart = await client.from("carts").select("id, subtotal, restaurant:restaurants(id,name, imageURL:image_url)," +
+        "items:cart_items(id, quantity, subtotal, menuItem:menu_items(name, description, imageURL:image_url, price))")
         .eq("id", cartId)
         .maybeSingle()
         .then(({error, data}) => {
@@ -66,13 +68,6 @@ async function getCart(req: NextApiRequest, res: NextApiResponse<GetCartResponse
         })
     }
 
-    data.items = data.items.map(item => ({
-        ...item,
-        subtotal: item.quantity * item.menuItem.price
-    }))
-
-    data.subtotal = data.items.reduce((subtotal, item) => subtotal + item.subtotal, 0)
-
     res.send({
         hasCart: true,
         cart: data
@@ -90,49 +85,79 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
 
     const client = createServerSupabaseClient({req, res})
 
-    let result = await client.from("carts").select("id, restaurantId:restaurant_id")
+    let cart: Cart | null = await client.from("carts").select("id, subtotal, restaurantId:restaurant_id")
         .eq("id", cartId)
         .single()
         .then(({data, error}) => {
             if (error) throw error
-            return data
+            return data as any
         })
 
-    const {restaurantId} = result
+    if (cart == null) return res.status(400).end()
+
+    const {restaurantId, subtotal} = cart
 
     if (body.addItem != null) {
         const {menuItemId, quantity} = body.addItem
-        const item = await client.from("menu_items").select("id, price")
+        const item: MenuItem = await client.from("menu_items").select("id, price")
             .eq("id", menuItemId)
             .eq("restaurant_id", restaurantId)
             .single()
             .then(({data, error}) => {
                 if (error) throw error
-                return data
+                return data as any
             })
 
         if (item == null) {
             return res.status(400).end()
         }
 
-        await client.from("cart_items").insert({
+        let cartItem = await client.from("cart_items").insert({
             menu_item_id: menuItemId,
             cart_id: cartId,
+            item_price: item.price,
             quantity,
         })
-            .then()
-            .then(({error}) => {
+            .select("id,subtotal")
+            .single()
+            .then(({error, data}) => {
                 if (error) throw error
+                return data
             })
+
+        await client.from("carts").update({
+            subtotal: cart.subtotal + cartItem.subtotal
+        }).eq("id", cartId).then(({error}) => {
+            if (error) throw error
+        })
 
         res.status(200).end()
     } else if (body.removeItem != null) {
+        let cartItem: CartItem = await client.from("cart_items").select("id, subtotal")
+            .eq("id", body.removeItem.cartItemId)
+            .single()
+            .then(({error, data}) => {
+                if (error) throw error
+                return data as any
+            })
+
+        if (cartItem == null) {
+            return res.status(400).end()
+        }
+
         await client.from("cart_items")
             .delete()
             .eq("id", body.removeItem.cartItemId)
             .then(({error, data}) => {
                 if (error) throw error
             })
+
+        await client.from("carts").update({
+            subtotal: cart.subtotal - cartItem.subtotal
+        }).eq("id", cartId).then(({error}) => {
+            if (error) throw error
+        })
+
         res.status(204).end()
     } else {
         res.status(400).end()

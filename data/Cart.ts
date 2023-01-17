@@ -5,6 +5,7 @@ export type Cart = {
     id: number,
     items: CartItem[],
     restaurant: Restaurant,
+    restaurantId?: string,
     subtotal: number
 }
 
