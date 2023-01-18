@@ -12,19 +12,16 @@ import axios from "axios";
 import {useSession, useUser} from "@supabase/auth-helpers-react";
 import {createServerSupabaseClient} from "@supabase/auth-helpers-nextjs";
 import context from "react-redux/src/components/Context";
+import {getRedirectURL} from "../lib/redirectUtils";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const supabase = createServerSupabaseClient(context)
     const {data: {user}} = await supabase.auth.getUser()
 
     if (user == null) {
-        const host = process.env.VERCEL_URL
-            ? `https://${process.env.VERCEL_URL}`
-            : "http://localhost:3000"
-        
         return {
             redirect: {
-                destination: `/sign-in?redirectTo=${host}/assign-cart`,
+                destination: `/sign-in?redirectTo=${getRedirectURL("/checkout")}`,
                 permanent: false
             }
         }

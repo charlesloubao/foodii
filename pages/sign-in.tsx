@@ -5,6 +5,7 @@ import {useRouter} from "next/router";
 import {useMemo} from "react";
 import {createServerSupabaseClient} from "@supabase/auth-helpers-nextjs";
 import {useSupabaseClient} from "@supabase/auth-helpers-react";
+import {getRedirectURL} from "../lib/redirectUtils";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const supabase = createServerSupabaseClient(context)
@@ -13,7 +14,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     if (user !== null) {
         return {
             redirect: {
-                destination: context.query.redirectTo as string ?? "/",
+                destination: context.query.redirectTo as string ?? getRedirectURL("/"),
                 permanent: false
             }
         }
@@ -25,11 +26,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 }
 export default function SignIn() {
     const router = useRouter()
-    const redirectTo = useMemo<string>(() => router.query.redirectTo as string ?? "/", [router.query])
+    const redirectTo = useMemo<string>(() => router.query.redirectTo as string ?? getRedirectURL("/"), [router.query])
     const supabase = useSupabaseClient()
 
 
     console.log({redirectTo})
+
     function onSignInWithGoogle() {
         supabase.auth.signInWithOAuth({
             provider: "google",
