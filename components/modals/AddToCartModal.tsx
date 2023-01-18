@@ -1,20 +1,27 @@
-import {closeModal} from "../../state/features/modal/modalReducer";
+import {closeModal, openModal} from "../../state/features/modal/modalReducer";
 import {Minus, Plus, X} from "lucide-react";
 import {useAppDispatch, useAppSelector} from "../../state/store";
 import {MenuItem} from "../../data/MenuItem";
 import Styles from '../../styles/Modal.module.scss'
 import ModalTopBar from "../ModalTopBar";
 import Button from "../Button";
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {CartItem, UpdateCartDTO} from "../../data/CartItem";
 import axios from "axios";
 import {onError} from "../../state/features/error/errorReducer";
 import {Cart, CartDTO} from "../../data/Cart";
 import {onCartUpdated} from "../../state/features/cart/cartReducer";
 import useSWR from "swr";
+import {useUser} from "@supabase/auth-helpers-react";
+import Link from "next/link";
+import {useRouter} from "next/router";
+import {getRedirectURL} from "../../lib/redirectUtils";
 
 export default function AddToCartModal({item}: { item: MenuItem }) {
     const cartSWR = useSWR("/api/cart")
+
+    const router = useRouter()
+    const user = useUser()
 
     const cart = useAppSelector(state => state.cart)
     const dispatch = useAppDispatch()
@@ -47,6 +54,19 @@ export default function AddToCartModal({item}: { item: MenuItem }) {
         } catch (e) {
             dispatch(onError(e as Error))
         }
+    }
+
+    if (user == null) {
+        return <div className={Styles.container}>
+            <ModalTopBar/>
+            <div className={Styles.content}>
+                <Link
+                    href={`/sign-in?redirectTo=${encodeURIComponent(getRedirectURL(`${router.asPath}?addToCart=${item.id}`))}`}>
+                    <p className="mb-4">Sign in to add things to your cart</p>
+                    <Button onClick={() => dispatch(closeModal())}>Click here to sign in</Button>
+                </Link>
+            </div>
+        </div>
     }
 
     return <div className={Styles.container}>

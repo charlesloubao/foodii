@@ -3,9 +3,11 @@ import {restaurants, supabaseClient} from "../../db";
 import {Restaurant} from "../../data/Restaurant";
 import {useRouter} from "next/router";
 import MenuItemCard from "../../components/MenuItemCard";
-import {useEffect} from "react";
+import {useEffect, useMemo} from "react";
 import {useAppDispatch} from "../../state/store";
 import {setCurrentRestaurant} from "../../state/features/cart/cartReducer";
+import {openModal} from "../../state/features/modal/modalReducer";
+import {useUser} from "@supabase/auth-helpers-react";
 
 type RestaurantPageProps = {
     restaurant: Restaurant | null
@@ -56,10 +58,22 @@ export const getStaticPaths: GetStaticPaths = async (context) => {
 export default function RestaurantPage({restaurant}: RestaurantPageProps) {
     const router = useRouter()
     const dispatch = useAppDispatch()
+    const user = useUser()
+
+    const {addToCart} = useMemo<any>(() => router.query as any, [router.query])
 
     useEffect(() => {
         dispatch(setCurrentRestaurant(restaurant))
     }, [restaurant])
+
+    useEffect(() => {
+        if (user !== null && restaurant != null && addToCart != null) {
+            dispatch(openModal({
+                type: "add-to-cart",
+                data: (restaurant.menu.find(category => category.items.find(item => item.id !== addToCart)))?.items.find(item => item.id == addToCart)!
+            }))
+        }
+    }, [user, addToCart])
 
     if (router.isFallback) {
         return <div>Loading please wait</div>
