@@ -1,4 +1,4 @@
-import {NextPage} from "next";
+import {GetServerSideProps, NextPage} from "next";
 import {ArrowLeft} from "lucide-react";
 import {useRouter} from "next/router";
 import AppLogo from "../components/AppLogo";
@@ -7,9 +7,31 @@ import TextField from "../components/TextField";
 import {useAppDispatch, useAppSelector} from "../state/store";
 import CartListItem from "../components/CartListItem";
 import OrderSummaryText from "../components/OrderSummaryText";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import axios from "axios";
+import {useSession, useUser} from "@supabase/auth-helpers-react";
+import {createServerSupabaseClient} from "@supabase/auth-helpers-nextjs";
+import context from "react-redux/src/components/Context";
 
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const supabase = createServerSupabaseClient(context)
+    const {data: {user}} = await supabase.auth.getUser()
+
+    if (user == null) {
+        return {
+            redirect: {
+                destination: "/sign-in?redirectTo=http://localhost:3000/assign-cart",
+                permanent: false
+            }
+        }
+    }
+
+    return {
+        props: {
+            user
+        }
+    }
+}
 export default function Checkout() {
     const [placingOrder, setPlacingOrder] = useState<boolean>(false)
 
@@ -24,7 +46,7 @@ export default function Checkout() {
     const router = useRouter()
 
     const cart = useAppSelector(state => state.cart)
-    const dispatch = useAppDispatch()
+    const user = useUser()
 
     async function onPlaceOrderClick() {
         setPhoneNumberError("")
@@ -65,6 +87,10 @@ export default function Checkout() {
             setPlacingOrder(false)
         }
     }
+
+    useEffect(() => {
+        console.log({user})
+    }, [user])
 
     if (cart.cartLoading) {
         return <div>Loading...</div>

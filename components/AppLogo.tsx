@@ -1,3 +1,3 @@
-export default function AppLogo() {
-    return <span className="font-extrabold text-lg text-green-700 tracking-widest">FOODII</span>
+export default function AppLogo({size}: { size?: number }) {
+    return <span style={{fontSize: size ?? 24}} className="font-extrabold text-green-700 tracking-widest">FOODII</span>
 }

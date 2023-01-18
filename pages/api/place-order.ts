@@ -12,6 +12,10 @@ const handler: NextApiHandler = async (req, res) => {
 
     const dbClient = createServerSupabaseClient({req, res})
 
+    const {data: {user}} = await dbClient.auth.getUser()
+
+    if (user == null) return res.status(403).end()
+
     const cart: Cart = await dbClient.from("carts")
         .select("id, subtotal, restaurantId: restaurant_id, items:cart_items(id, quantity, menuItem:menu_items(id,price))")
         .eq("id", cartId)
@@ -32,7 +36,8 @@ const handler: NextApiHandler = async (req, res) => {
             subtotal: cart.subtotal,
             restaurant_id: cart.restaurantId!,
             cart_id: cartId,
-            status: "received"
+            status: "received",
+            user_id: user.id
         }).select()
         .single()
         .then(({error, data}) => {

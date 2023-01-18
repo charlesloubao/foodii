@@ -41,19 +41,19 @@ async function createCart(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function getCart(req: NextApiRequest, res: NextApiResponse<GetCartResponse>) {
-    const cartId = req.cookies.cartId
+    let cartId = req.cookies.cartId
+
+    const client: SupabaseClient = createServerSupabaseClient({req, res})
+
+    const {data: {user}} = await client.auth.getUser()
 
     if (cartId == null) {
+        //TODO: If user is authenticated pull cart that doesn't have order ID and set cartID with that
         return res.send({
             hasCart: false,
             cart: null
         })
     }
-
-
-    const client: SupabaseClient = createServerSupabaseClient({req, res})
-
-    const {data: {user}} = await client.auth.getUser()
 
     const data: Cart = await client.from("carts").select("id, subtotal, restaurant:restaurants(id,name, imageURL:image_url)," +
         "items:cart_items(id, quantity, subtotal, menuItem:menu_items(name, description, imageURL:image_url, price))")
@@ -63,10 +63,8 @@ async function getCart(req: NextApiRequest, res: NextApiResponse<GetCartResponse
         })
         .single()
         .then(({error, data}) => {
-            if (error) throw  error
             return data as unknown as Cart
         })
-        .then()
 
     if (data == null) {
         res.setHeader("Set-Cookie", serialize("cartId", "", {

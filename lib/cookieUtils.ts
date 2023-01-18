@@ -9,3 +9,9 @@ export function serializeServerCookie(name: string, value: string, expires?: Dat
         }
     )
 }
+
+export function clearCookie(name: string) {
+    return serialize(name, "", {
+        maxAge: 0,
+    })
+}
