@@ -18,9 +18,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const {data: {user}} = await supabase.auth.getUser()
 
     if (user == null) {
+        const host = process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : "http://localhost:3000"
+        
         return {
             redirect: {
-                destination: "/sign-in?redirectTo=http://localhost:3000/assign-cart",
+                destination: `/sign-in?redirectTo=${host}/assign-cart`,
                 permanent: false
             }
         }

@@ -1,7 +1,7 @@
 import {createServerSupabaseClient} from "@supabase/auth-helpers-nextjs";
 import {NextApiHandler, NextApiRequest, NextApiResponse} from "next";
 import {Cart, CartDTO} from "../../../data/Cart";
-import {serialize, CookieSerializeOptions} from 'cookie'
+import {serialize} from 'cookie'
 import {CartItem, UpdateCartDTO} from "../../../data/CartItem";
 import {MenuItem} from "../../../data/MenuItem";
 import {serializeServerCookie} from "../../../lib/cookieUtils";
@@ -16,16 +16,25 @@ export type GetCartResponse = {
 async function createCart(req: NextApiRequest, res: NextApiResponse) {
     const data: CartDTO = req.body
     const supabaseClient = createServerSupabaseClient({req, res})
-
     const {data: {user}} = await supabaseClient.auth.getUser()
 
-    const response = await supabaseClient.from("carts")
+    const existingCart = await supabaseClient.from("carts").select("id")
+        .match({"user_id": user!.id, pending: true})
+        .maybeSingle()
+        .then(({error, data}) => {
+            if (error) return Promise.reject(error)
+            return data
+        })
+
+    if (existingCart != null) res.status(403).end()
+
+    await supabaseClient.from("carts")
         .insert([
             {
                 "restaurant_id": data.restaurantId,
                 subtotal: 0,
                 user_id: user?.id,
-                temporary: user == null
+                pending: true
             }
         ])
         .select("id")
@@ -35,41 +44,23 @@ async function createCart(req: NextApiRequest, res: NextApiResponse) {
             return data
         })
 
-    res.setHeader("Set-Cookie", serializeServerCookie("cartId", response.id))
-
     res.status(204).end()
 }
 
 async function getCart(req: NextApiRequest, res: NextApiResponse<GetCartResponse>) {
-    let cartId = req.cookies.cartId
-
     const client: SupabaseClient = createServerSupabaseClient({req, res})
 
     const {data: {user}} = await client.auth.getUser()
 
-    if (cartId == null) {
-        //TODO: If user is authenticated pull cart that doesn't have order ID and set cartID with that
-        return res.send({
-            hasCart: false,
-            cart: null
-        })
-    }
-
     const data: Cart = await client.from("carts").select("id, subtotal, restaurant:restaurants(id,name, imageURL:image_url)," +
         "items:cart_items(id, quantity, subtotal, menuItem:menu_items(name, description, imageURL:image_url, price))")
-        .match({
-            id: cartId,
-            ...(user != null ? {user_id: user.id} : {temporary: true})
-        })
-        .single()
+        .match({"user_id": user!.id, pending: true})
+        .maybeSingle()
         .then(({error, data}) => {
             return data as unknown as Cart
         })
 
     if (data == null) {
-        res.setHeader("Set-Cookie", serialize("cartId", "", {
-            maxAge: 0
-        }))
         return res.send({
             hasCart: false,
             cart: null
@@ -84,22 +75,15 @@ async function getCart(req: NextApiRequest, res: NextApiResponse<GetCartResponse
 }
 
 async function updateCart(req: NextApiRequest, res: NextApiResponse) {
-    const cartId = req.cookies.cartId
     const body: UpdateCartDTO = req.body
-
-    if (!cartId) {
-        return res.status(403).end()
-    }
 
     const client: SupabaseClient = createServerSupabaseClient({req, res})
 
     const {data: {user}} = await client.auth.getUser()
 
     let cart: Cart | null = await client.from("carts").select("id, subtotal, restaurantId:restaurant_id")
-        .match({
-            id: cartId,
-            ...(user != null ? {user_id: user.id} : {temporary: true})
-        }).single()
+        .match({"user_id": user!.id, pending: true})
+        .maybeSingle()
         .then(({data, error}) => {
             if (error) throw error
             return data as any
@@ -112,8 +96,7 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
     if (body.addItem != null) {
         const {menuItemId, quantity} = body.addItem
         const item: MenuItem = await client.from("menu_items").select("id, price")
-            .eq("id", menuItemId)
-            .eq("restaurant_id", restaurantId)
+            .match({id: menuItemId, restaurant_id: restaurantId})
             .single()
             .then(({data, error}) => {
                 if (error) throw error
@@ -126,10 +109,10 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
 
         let cartItem = await client.from("cart_items").insert({
             menu_item_id: menuItemId,
-            cart_id: cartId,
+            cart_id: cart.id,
             item_price: item.price,
             quantity,
-            user_id: user?.id
+            user_id: user!.id
         })
             .select("id,subtotal")
             .single()
@@ -138,9 +121,10 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
                 return data
             })
 
-        await client.from("carts").update({
+        // Update the subtotal using the admin cliennt (users can't updated a cart, only cart items)
+        await createAdminSupabaseClient().from("carts").update({
             subtotal: cart.subtotal + cartItem.subtotal
-        }).eq("id", cartId).then(({error}) => {
+        }).eq("id", cart.id).then(({error}) => {
             if (error) throw error
         })
 
@@ -165,9 +149,10 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
                 if (error) throw error
             })
 
-        await client.from("carts").update({
+        // Update the subtotal using the admin cliennt (users can't updated a cart, only cart items)
+        await createAdminSupabaseClient().from("carts").update({
             subtotal: cart.subtotal - cartItem.subtotal
-        }).eq("id", cartId).then(({error}) => {
+        }).eq("id", cart.id).then(({error}) => {
             if (error) throw error
         })
 
@@ -178,6 +163,14 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
 }
 
 const handler: NextApiHandler = async (req, res) => {
+    const supabaseClient = createServerSupabaseClient({req, res})
+
+    const {data: {user}} = await supabaseClient.auth.getUser()
+
+    if (user == null) {
+        return res.status(403).end()
+    }
+
     switch (req.method) {
         case "POST":
             return createCart(req, res)

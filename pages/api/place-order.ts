@@ -3,12 +3,10 @@ import {createServerSupabaseClient} from "@supabase/auth-helpers-nextjs";
 import {Cart} from "../../data/Cart";
 import {CartItem} from "../../data/CartItem";
 import {serialize} from "cookie";
+import {createAdminSupabaseClient} from "../../lib/supabaseUtils";
 
 const handler: NextApiHandler = async (req, res) => {
     if (req.method !== "POST") return res.status(405).end()
-    const cartId = req.cookies.cartId
-
-    if (cartId == null) return res.status(403).end()
 
     const dbClient = createServerSupabaseClient({req, res})
 
@@ -18,8 +16,8 @@ const handler: NextApiHandler = async (req, res) => {
 
     const cart: Cart = await dbClient.from("carts")
         .select("id, subtotal, restaurantId: restaurant_id, items:cart_items(id, quantity, menuItem:menu_items(id,price))")
-        .eq("id", cartId)
-        .single()
+        .match({"user_id": user!.id, pending: true})
+        .maybeSingle()
         .then(({data, error}) => {
             if (error) throw error
             return data as any
@@ -35,7 +33,7 @@ const handler: NextApiHandler = async (req, res) => {
             taxes,
             subtotal: cart.subtotal,
             restaurant_id: cart.restaurantId!,
-            cart_id: cartId,
+            cart_id: cart.id,
             status: "received",
             user_id: user.id
         }).select()
@@ -45,9 +43,12 @@ const handler: NextApiHandler = async (req, res) => {
             return data
         })
 
-    res.setHeader("Set-Cookie", serialize("cartId", "", {
-        maxAge: 0
-    }))
+    await createAdminSupabaseClient().from("carts").update({
+        pending: false
+    }).eq("id", cart.id).then(({data, error}) => {
+        if (error) throw error
+    })
+
     res.send(order)
 }
 
