@@ -4,6 +4,9 @@ import {Cart, CartDTO} from "../../../data/Cart";
 import {serialize, CookieSerializeOptions} from 'cookie'
 import {CartItem, UpdateCartDTO} from "../../../data/CartItem";
 import {MenuItem} from "../../../data/MenuItem";
+import {serializeServerCookie} from "../../../lib/cookieUtils";
+import {SupabaseClient} from "@supabase/supabase-js";
+import {createAdminSupabaseClient} from "../../../lib/supabaseUtils";
 
 export type GetCartResponse = {
     hasCart: boolean,
@@ -14,11 +17,15 @@ async function createCart(req: NextApiRequest, res: NextApiResponse) {
     const data: CartDTO = req.body
     const supabaseClient = createServerSupabaseClient({req, res})
 
+    const {data: {user}} = await supabaseClient.auth.getUser()
+
     const response = await supabaseClient.from("carts")
         .insert([
             {
                 "restaurant_id": data.restaurantId,
-                subtotal: 0
+                subtotal: 0,
+                user_id: user?.id,
+                temporary: user == null
             }
         ])
         .select("id")
@@ -28,12 +35,8 @@ async function createCart(req: NextApiRequest, res: NextApiResponse) {
             return data
         })
 
-    const cartCookieOptions: CookieSerializeOptions = {
-        sameSite: true,
-        secure: process.env.NODE_ENV === "production"
-    }
+    res.setHeader("Set-Cookie", serializeServerCookie("cartId", response.id))
 
-    res.setHeader("Set-Cookie", serialize("cartId", response.id.toString(), cartCookieOptions))
     res.status(204).end()
 }
 
@@ -47,11 +50,18 @@ async function getCart(req: NextApiRequest, res: NextApiResponse<GetCartResponse
         })
     }
 
-    const client = createServerSupabaseClient({req, res})
+
+    const client: SupabaseClient = createServerSupabaseClient({req, res})
+
+    const {data: {user}} = await client.auth.getUser()
+
     const data: Cart = await client.from("carts").select("id, subtotal, restaurant:restaurants(id,name, imageURL:image_url)," +
         "items:cart_items(id, quantity, subtotal, menuItem:menu_items(name, description, imageURL:image_url, price))")
-        .eq("id", cartId)
-        .maybeSingle()
+        .match({
+            id: cartId,
+            ...(user != null ? {user_id: user.id} : {temporary: true})
+        })
+        .single()
         .then(({error, data}) => {
             if (error) throw  error
             return data as unknown as Cart
@@ -83,11 +93,15 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
         return res.status(403).end()
     }
 
-    const client = createServerSupabaseClient({req, res})
+    const client: SupabaseClient = createServerSupabaseClient({req, res})
+
+    const {data: {user}} = await client.auth.getUser()
 
     let cart: Cart | null = await client.from("carts").select("id, subtotal, restaurantId:restaurant_id")
-        .eq("id", cartId)
-        .single()
+        .match({
+            id: cartId,
+            ...(user != null ? {user_id: user.id} : {temporary: true})
+        }).single()
         .then(({data, error}) => {
             if (error) throw error
             return data as any
@@ -117,6 +131,7 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
             cart_id: cartId,
             item_price: item.price,
             quantity,
+            user_id: user?.id
         })
             .select("id,subtotal")
             .single()
