@@ -13,6 +13,9 @@ import {useSession, useUser} from "@supabase/auth-helpers-react";
 import {createServerSupabaseClient} from "@supabase/auth-helpers-nextjs";
 import context from "react-redux/src/components/Context";
 import {getRedirectURL} from "../lib/redirectUtils";
+import {onError} from "../state/features/error/errorReducer";
+import {AddressElement, Elements, PaymentElement} from "@stripe/react-stripe-js";
+import {loadStripe} from "@stripe/stripe-js";
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
     const supabase = createServerSupabaseClient(context)
@@ -34,6 +37,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
 }
 export default function Checkout() {
+    const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
+    const dispatch = useAppDispatch()
     const [placingOrder, setPlacingOrder] = useState<boolean>(false)
 
     const [address, setAddress] = useState<string>("")
@@ -44,13 +50,15 @@ export default function Checkout() {
 
     const [instructions, setInstructions] = useState<string>("")
 
+    const [paymentIntentSecret, setPaymentIntentSecret] = useState<string | null>(null)
+
     const router = useRouter()
 
     const cart = useAppSelector(state => state.cart)
     const user = useUser()
 
     async function onPlaceOrderClick() {
-        setPhoneNumberError("")
+        /*setPhoneNumberError("")
         setAddressError("")
 
         let hasErrors = false
@@ -86,11 +94,27 @@ export default function Checkout() {
         } catch (e) {
             alert("An error occurred")
             setPlacingOrder(false)
+        }*/
+    }
+
+    async function fetchPaymentIntentSecret() {
+        try {
+
+            const {clientSecret} = await axios.post("/api/stripe/payment-intent")
+                .then(response => response.data)
+
+            setPaymentIntentSecret(clientSecret)
+
+        } catch (e: any) {
+            dispatch(onError(e))
         }
     }
 
     useEffect(() => {
-        console.log({user})
+        if (!user) return
+
+        fetchPaymentIntentSecret()
+
     }, [user])
 
     if (cart.cartLoading) {
@@ -112,35 +136,38 @@ export default function Checkout() {
         <div className="flex-1 flex flex-col lg:flex-row">
             <div className="lg:flex-[2] lg:border-r p-4">
                 <div className="lg:w-2/3 xl:w-1/2 mx-auto lg:py-4">
+                    {paymentIntentSecret && <>
+                        <h1 className="heading-1 mb-4">Checkout</h1>
+                        <Elements stripe={stripePromise} options={{
+                            clientSecret: paymentIntentSecret
+                        }}>
+                            <div className="border rounded-lg p-4 mb-4">
+                                <h2 className="heading-2 mb-6">Delivery details</h2>
+                                <AddressElement options={{mode: "shipping"}}/>
 
-                    <h1 className="heading-1 mb-4">Checkout</h1>
-                    <div className="border rounded-lg p-4 ">
-                        <h2 className="heading-2 mb-6">Delivery details</h2>
-                        <TextField value={address} onChange={setAddress} className="mb-2" label={"Address"}
-                                   type="text"
-                                   name="address" id="address"
-                                   placeholder="Address"
-                                   error={addressError}/>
+                                <div className="mt-4">
+                                    <h3 className="heading-3 mb-2">Delivery instructions</h3>
+                                    <TextField value={instructions} onChange={setInstructions} multiline={true}
+                                               className="resize-none" cols={10} name="instructions"
+                                               id="instructions"
+                                               placeholder="Anything the driver should know?"/>
+                                </div>
+                            </div>
 
-                        <TextField value={phoneNumber} onChange={setPhoneNumber} className="mb-4"
-                                   label="Phone number"
-                                   type="text" name="phone" id="phone"
-                                   placeholder="Phone number"
-                                   error={phoneNumberError}/>
+                            <div className="border rounded-lg p-4 mb-4">
+                                <h2 className="heading-2 mb-6">Payment information</h2>
+                                <PaymentElement />
+                            </div>
 
-                        <div>
-                            <h3 className="heading-3 mb-2">Delivery instructions</h3>
-                            <TextField value={instructions} onChange={setInstructions} multiline={true}
-                                       className="resize-none" cols={10} name="instructions"
-                                       id="instructions"
-                                       placeholder="Anything the driver should know?"/>
-                        </div>
-                    </div>
-                    <Button disabled={placingOrder} onClick={onPlaceOrderClick} className="hidden lg:block mt-4 w-full">
-                        {placingOrder
-                            ? "Placing your order..."
-                            : "Place order"}
-                    </Button>
+                        </Elements>
+
+                        <Button disabled={placingOrder} onClick={onPlaceOrderClick}
+                                className="hidden lg:block mt-4 w-full">
+                            {placingOrder
+                                ? "Placing your order..."
+                                : "Place order"}
+                        </Button>
+                    </>}
 
 
                 </div>
@@ -152,13 +179,14 @@ export default function Checkout() {
 
                 <OrderSummaryText cart={cart.data}/>
             </div>
-            <div className="p-4 block lg:hidden">
-                <Button disabled={placingOrder} onClick={onPlaceOrderClick} className="w-full">
+            {paymentIntentSecret && <div className="p-4 block lg:hidden">
+                <Button disabled={placingOrder} onClick={onPlaceOrderClick}
+                        className="w-full">
                     {placingOrder
                         ? "Placing your order..."
                         : "Place order"}
                 </Button>
-            </div>
+            </div>}
 
         </div>
 
