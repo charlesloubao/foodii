@@ -19,5 +19,5 @@ html, body, #__next {
 }
 
 .app-container {
-  @apply w-full p-4 lg:p-8 lg:px-64
+  @apply w-full p-4 lg:p-8 lg:px-32 xl:px-64
 }

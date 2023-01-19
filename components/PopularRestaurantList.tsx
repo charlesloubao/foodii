@@ -35,7 +35,7 @@ export default function PopularRestaurantList() {
         return <>{error}</>
     }
 
-    return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+    return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {restaurants?.map(restaurant => <div key={restaurant.id}>
             <Link href={`/restaurants/${restaurant.id}`}>
                 <div className="hover:bg-gray-100 p-4 rounded-md">
