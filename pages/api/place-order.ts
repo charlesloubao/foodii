@@ -26,6 +26,7 @@ const handler: NextApiHandler = async (req, res) => {
     const fees = 0
     const taxes = 0
 
+    const {address, phoneNumber, instructions} = req.body
 
     const order = await dbClient.from("orders")
         .insert({
@@ -35,7 +36,10 @@ const handler: NextApiHandler = async (req, res) => {
             restaurant_id: cart.restaurantId!,
             cart_id: cart.id,
             status: "received",
-            user_id: user.id
+            user_id: user.id,
+            address,
+            phone_number: phoneNumber,
+            instructions: instructions
         }).select()
         .single()
         .then(({error, data}) => {

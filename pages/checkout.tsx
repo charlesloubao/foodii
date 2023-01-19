@@ -42,7 +42,7 @@ export default function Checkout() {
     const [phoneNumber, setPhoneNumber] = useState<string>("")
     const [phoneNumberError, setPhoneNumberError] = useState<string>("")
 
-    const [deliveryInstructions, setDeliveryInstructions] = useState<string>("")
+    const [instructions, setInstructions] = useState<string>("")
 
     const router = useRouter()
 
@@ -58,7 +58,7 @@ export default function Checkout() {
         const order: any = {
             address: address.trim(),
             phoneNumber: phoneNumber.trim(),
-            deliveryInstructions: deliveryInstructions.trim(),
+            instructions: instructions.trim(),
         }
 
         if (!order.address) {
@@ -77,7 +77,7 @@ export default function Checkout() {
         setPlacingOrder(true)
 
         try {
-            const {id} = await axios.post("/api/place-order")
+            const {id} = await axios.post("/api/place-order", order)
                 .then(response => response.data)
 
             window.location.replace("/track-order?orderId=" + id)
@@ -130,7 +130,7 @@ export default function Checkout() {
 
                         <div>
                             <h3 className="heading-3 mb-2">Delivery instructions</h3>
-                            <TextField value={deliveryInstructions} onChange={setDeliveryInstructions} multiline={true}
+                            <TextField value={instructions} onChange={setInstructions} multiline={true}
                                        className="resize-none" cols={10} name="instructions"
                                        id="instructions"
                                        placeholder="Anything the driver should know?"/>

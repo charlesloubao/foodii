@@ -69,7 +69,7 @@ export default function TrackOrder() {
         try {
             setLoading(true)
             const result = await supabaseClient.from("orders").select("id, status," +
-                "subtotal, taxes, fees, total, createdAt:created_at," +
+                "subtotal, taxes, fees, total, createdAt:created_at, deliveredAt:delivered_at," +
                 "restaurant:restaurants(id, name)," +
                 "cart:carts(id, subtotal, items:cart_items(id, quantity, subtotal, menuItem:menu_items(name, description, price, imageURL:image_url)))")
                 .eq('id', orderId)
@@ -95,7 +95,8 @@ export default function TrackOrder() {
                 {event: "UPDATE", schema: "public", table: "orders", filter: "id=eq." + orderId},
                 (event) => {
                     setOrder(old => update(old, {
-                        status: {$set: event.new.status}
+                        status: {$set: event.new.status},
+                        deliveredAt: {$set: event.new.delivered_at}
                     }))
                 }).subscribe()
 
@@ -127,7 +128,12 @@ export default function TrackOrder() {
         </div>
         <div className="flex-1 overflow-auto md:w-2/3 lg:w-1/2 mx-auto p-4">
             <h1 className="heading-1 mb-4">{order.restaurant?.name}</h1>
-            <div className="mb-12 font-semibold">{moment(order.createdAt).format('MMMM DD, YYYY, h:mm A')}</div>
+            <div className="mb-12">
+                <div className="font-semibold">Order placed
+                    on {moment(order.createdAt).format('MMMM DD, YYYY, h:mm A')}</div>
+                {order.deliveredAt && <div className="mt-1 font-semibold">Delivered
+                    on {moment(order.deliveredAt).format('MMMM DD, YYYY, h:mm A')}</div>}
+            </div>
             <OrderTimeline status={order.status}/>
             <div className="mt-8">
                 <h2 className="heading-2 mb-4 ">Order details</h2>

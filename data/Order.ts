@@ -9,6 +9,7 @@ export type OrderStatus =
 export type Order = {
     id: string,
     createdAt: string,
+    deliveredAt: string | null,
     restaurant: Restaurant,
     cart: Cart,
     status: OrderStatus
