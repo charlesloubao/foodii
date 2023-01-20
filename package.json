@@ -46,7 +46,9 @@
     "@types/jsonwebtoken": "^9.0.1",
     "@types/uuid": "^9.0.0",
     "autoprefixer": "^10.4.13",
+    "nice-color-palettes": "^3.0.0",
     "postcss": "^8.4.21",
+    "sqlite3": "^5.1.4",
     "tailwindcss": "^3.2.4"
   }
 }

@@ -39,8 +39,8 @@ export default function PopularRestaurantList() {
         {restaurants?.map(restaurant => <div key={restaurant.id}>
             <Link href={`/restaurants/${restaurant.id}`}>
                 <div className="hover:bg-gray-100 p-4 rounded-md">
-                    <div className="w-full aspect-video bg-gray-400 rounded-md mb-2 overflow-hidden object-fit">
-                        <img src={restaurant.imageURL} className="w-full h-full" alt={""}/>
+                    <div className="w-full aspect-video bg-gray-400 rounded-md mb-2 overflow-hidden ">
+                        <img src={restaurant.imageURL} className="w-full h-full object-cover" alt={""}/>
                     </div>
                     <h2 className="heading-2 mb-1">{restaurant.name}</h2>
                     <p>{restaurant.description}</p>
