@@ -2,7 +2,9 @@ import {CartItem, UpdateCartDTO} from "./CartItem";
 import {Restaurant} from "./Restaurant";
 
 export type Cart = {
-    id: number,
+    id: string,
+
+    userId: string,
     items: CartItem[],
     restaurant: Restaurant,
     restaurantId?: string,
