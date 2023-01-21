@@ -7,6 +7,10 @@ export type OrderStatus =
     | "delivered"
 
 export type Order = {
+    customerName: string
+    instructions: string
+    address: string
+    phoneNumber: string
     id: string,
     createdAt: string,
     deliveredAt: string | null,

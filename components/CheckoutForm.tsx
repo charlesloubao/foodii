@@ -1,5 +1,5 @@
 import TextField from "./TextField";
-import {PaymentElement, useElements, useStripe} from "@stripe/react-stripe-js";
+import {AddressElement, PaymentElement, useElements, useStripe} from "@stripe/react-stripe-js";
 import CartListItem from "./CartListItem";
 import OrderSummaryText from "./OrderSummaryText";
 import Button from "./Button";
@@ -7,6 +7,7 @@ import {useState} from "react";
 import {getRedirectURL} from "../lib/redirectUtils";
 import {useAppDispatch, useAppSelector} from "../state/store";
 import {onError} from "../state/features/error/errorReducer";
+import axios from "axios";
 
 export default function CheckoutForm() {
     const cart = useAppSelector(state => state.cart)
@@ -27,6 +28,11 @@ export default function CheckoutForm() {
 
     async function onPlaceOrderClick() {
         setPlacingOrder(true)
+
+        await axios.put("/api/stripe/payment-intent", {
+            instructions
+        })
+
         const {error} = await stripe?.confirmPayment({
             elements,
             confirmParams: {
@@ -46,15 +52,12 @@ export default function CheckoutForm() {
 
             <div className="border rounded-lg p-4 mb-4">
                 <h2 className="heading-2 mb-6">Delivery details</h2>
-                <TextField className={"mb-4"} label={"Address"} placeholder={"Address"}
-                           id={"address"} name={"address"}
-                           value={address}
-                           onChange={setAddress}/>
-
-                <TextField className={"mb-4"} label={"Phone number"} placeholder={"Phone number"}
-                           id={"phoneNumber"}
-                           name={"phoneNumber"} value={phoneNumber}
-                           onChange={setPhoneNumber}/>
+                <AddressElement className={"mb-2"} options={{
+                    mode: "shipping",
+                    fields: {
+                        phone: "always"
+                    }
+                }}/>
 
                 <div>
                     <TextField label={"Delivery instructions"} value={instructions}
@@ -72,7 +75,8 @@ export default function CheckoutForm() {
 
         </div>
         <div className="border rounded-md p-4 ">
-            <h2 className="heading-2 mb-6">Order summary</h2>
+            <h2 className="heading-2 mb-2">Order summary</h2>
+            <h2 className="heading-3 mb-8">{cart.data!.restaurant.name}</h2>
             {cart.data!.items.map((item, index) => (
                 <CartListItem key={`cart_item_${index}`} item={item} index={index}/>))}
 

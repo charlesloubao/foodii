@@ -3,33 +3,51 @@ import {useRouter} from "next/router";
 import {useEffect, useMemo, useRef} from "react";
 import {useSupabaseClient} from "@supabase/auth-helpers-react";
 import {Order} from "../data/Order";
+import update from "immutability-helper";
+import {RealtimeChannel} from "@supabase/realtime-js";
+import {NextPage} from "next";
 
 export default function ConfirmPaymentCallback() {
     const router = useRouter()
     const paymentIntent = useMemo<string>(() => router.query.payment_intent as string, [router])
     const supabaseClient = useSupabaseClient()
-    const unsubscribe: any = useRef()
+    const channel = useRef<RealtimeChannel>()
 
-    async function waitForOrder() {
-        //TODO: query stripe for cartId
-        //TODO: query orders with cartId
-        //TODO: if order is null subscribe to db channel for order insert and redirect to /track-order?id={orderID}
-        //TODO: else redirect to /track-order?id={orderID}
+    async function findOrderByPaymentIntent() {
+        const orderId = await supabaseClient.from("orders")
+            .select("id")
+            .eq("stripe_payment_intent_id", paymentIntent)
+            .maybeSingle()
+            .then(response => response.data?.id)
+
+        if (orderId != null) return router.replace("/track-order?id=" + orderId)
+
+        channel.current = supabaseClient.channel(`*`)
+            .on("postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "orders",
+                    filter: "stripe_payment_intent_id=eq." + paymentIntent
+                },
+                (event) => {
+                    router.push("/track-order?id=" + event.new.id)
+                }).subscribe()
     }
 
     useEffect(() => {
         if (paymentIntent == null) return
 
-        waitForOrder()
+        findOrderByPaymentIntent()
         return () => {
-            unsubscribe.current && unsubscribe.current()
+            channel.current && supabaseClient.removeChannel(channel.current)
         }
 
     }, [paymentIntent])
 
     if (paymentIntent == null) return <></>
 
-    return <div>
-        {paymentIntent}
-    </div>
+    return <></>
 }
+
+ConfirmPaymentCallback.getLayout = (page: NextPage) => page

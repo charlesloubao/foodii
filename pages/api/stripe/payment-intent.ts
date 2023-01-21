@@ -1,14 +1,33 @@
-import {NextApiHandler} from "next";
+import {NextApiHandler, NextApiRequest, NextApiResponse} from "next";
 import {withUserSignedIn} from "../../../middleware/withUserSignedIn";
 import {createServerSupabaseClient} from "@supabase/auth-helpers-nextjs";
 import {Cart} from "../../../data/Cart";
 import createStripeClient from "../../../lib/createStripeClient";
 import {createAdminSupabaseClient} from "../../../lib/supabaseUtils";
+import {serializeServerCookie} from "../../../lib/cookieUtils";
+import Stripe from "stripe";
 
-const handler: NextApiHandler = async (req, res) => {
+async function updatePaymentIntent(req: NextApiRequest, res: NextApiResponse<any>) {
+    const paymentIntentId = req.cookies["stripe-payment-intent"]
+
+    if (paymentIntentId == null) return res.status(400).end()
+
     const stripeClient = createStripeClient()
 
-    if (req.method !== "POST") return res.status(405).end()
+    const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId).then(({object}) => object as unknown as Stripe.PaymentIntent)
+
+    await stripeClient.paymentIntents.update(paymentIntentId, {
+        metadata: {
+            ...paymentIntent.metadata,
+            deliveryInstructions: req.body.instructions
+        }
+    })
+
+    res.status(204).end()
+}
+
+async function createPaymentIntent(req: NextApiRequest, res: NextApiResponse<any>) {
+    const stripeClient = createStripeClient()
 
     const supabaseClient = createServerSupabaseClient({req, res})
     const {data: {user}} = await supabaseClient.auth.getUser()
@@ -59,9 +78,24 @@ const handler: NextApiHandler = async (req, res) => {
         }
     })
 
+    res.setHeader("Set-Cookie", serializeServerCookie("stripe-payment-intent", paymentIntent.id))
+
     res.send({
         clientSecret: paymentIntent.client_secret
     })
+}
+
+const handler: NextApiHandler = async (req, res) => {
+
+    switch (req.method) {
+        case "POST":
+            return createPaymentIntent(req, res)
+        case "PUT":
+            return updatePaymentIntent(req, res)
+        default:
+            res.status(405).end()
+    }
+
 }
 
 export default withUserSignedIn(handler)

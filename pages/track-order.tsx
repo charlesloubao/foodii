@@ -3,7 +3,7 @@ import {useRouter} from "next/router";
 import React, {useEffect, useMemo, useState} from "react";
 import {useSupabaseClient} from "@supabase/auth-helpers-react";
 import {Order, OrderStatus} from "../data/Order";
-import {ArrowLeft, CheckCircle, CheckCircle2} from "lucide-react";
+import {ArrowLeft, CheckCircle, CheckCircle2, LocateIcon, MapPin, PersonStanding, Phone, User} from "lucide-react";
 import moment from "moment";
 import OrderSummaryText from "../components/OrderSummaryText";
 import CartListItem from "../components/CartListItem";
@@ -59,7 +59,7 @@ export default function TrackOrder() {
     const supabaseClient = useSupabaseClient()
     const router = useRouter()
 
-    const orderId = useMemo<string>(() => router.query.orderId as string, [router.query])
+    const orderId = useMemo<string>(() => router.query.id as string, [router.query])
 
     const [loading, setLoading] = useState<boolean>(true)
     const [error, setError] = useState<string | null>()
@@ -70,6 +70,10 @@ export default function TrackOrder() {
             setLoading(true)
             const result = await supabaseClient.from("orders").select("id, status," +
                 "subtotal, taxes, fees, total, createdAt:created_at, deliveredAt:delivered_at," +
+                "instructions," +
+                "customerName:customer_name," +
+                "address," +
+                "phoneNumber:phone_number," +
                 "restaurant:restaurants(id, name)," +
                 "cart:carts(id, subtotal, items:cart_items(id, quantity, subtotal, menuItem:menu_items(name, description, price, imageURL:image_url)))")
                 .eq('id', orderId)
@@ -137,7 +141,17 @@ export default function TrackOrder() {
             <OrderTimeline status={order.status}/>
             <div className="mt-8">
                 <h2 className="heading-2 mb-4 ">Order details</h2>
+                <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-2"><User size={18}/>{order.customerName}</div>
+                    <div className="flex items-center gap-2 mb-2"><MapPin size={18}/>{order.address}</div>
+                    <div className="flex items-center gap-2 mb-2"><Phone size={18}/> {order.phoneNumber}</div>
+                </div>
+                {order.instructions && <div className="mb-8">
+                    <h3 className={"heading-3 mb-4"}>Delivery instructions</h3>
+                    <p>{order.instructions}</p>
+                </div>}
                 <div>
+                    <h3 className={"heading-3 mb-4"}>Cart</h3>
 
                     {order.cart.items.map((item, index) => (
                         <CartListItem removable={false} key={item.id} item={item} index={index}/>))}

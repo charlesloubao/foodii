@@ -12,8 +12,9 @@ export const config = {
 }
 
 async function onPaymentSucceeded(req: NextApiRequest, res: NextApiResponse<any>, data: Stripe.PaymentIntent) {
-    const {cartId} = data.metadata
+    const {cartId, deliveryInstructions} = data.metadata
     const supabaseClient = createAdminSupabaseClient()
+    const stripe = createStripeClient()
 
     const cart: Cart | null = await supabaseClient.from("carts").select(`
             id,
@@ -35,6 +36,9 @@ async function onPaymentSucceeded(req: NextApiRequest, res: NextApiResponse<any>
     const fees = 0
     const taxes = 0
 
+    const {address, phone, name} = data.shipping!
+    const {line1, line2, city, state, postal_code, country} = address!
+
     await supabaseClient.from("orders").insert({
         cart_id: cartId,
         user_id: cart.userId,
@@ -42,7 +46,12 @@ async function onPaymentSucceeded(req: NextApiRequest, res: NextApiResponse<any>
         fees,
         taxes,
         subtotal: cart.subtotal,
-        status: "received"
+        status: "received",
+        stripe_payment_intent_id: data.id,
+        customer_name: name,
+        address: [line1, line2, city, state, postal_code, country].filter(token => token != null).join(" "),
+        phone_number: phone,
+        instructions: deliveryInstructions
     })
         .select()
         .maybeSingle()
