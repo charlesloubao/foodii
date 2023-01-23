@@ -13,6 +13,13 @@ export default function MenuItemCard({item}: MenuItemCardProps) {
 
     function onAddToCart() {
         if (cartData != null && cartData.restaurantId !== currentRestaurant!.id) {
+            if (cartData.restaurantId !== currentRestaurant!.id) {
+                return dispatch(openModal({
+                    type: "ordering-from-other-restaurant-warning",
+                    data: item
+                }))
+            }
+
             return dispatch(openModal({
                 type: "ordering-from-other-restaurant-warning",
                 data: item

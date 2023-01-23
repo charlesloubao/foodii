@@ -4,7 +4,7 @@ import {Restaurant} from "../../data/Restaurant";
 import {useRouter} from "next/router";
 import MenuItemCard from "../../components/MenuItemCard";
 import {useEffect, useMemo} from "react";
-import {useAppDispatch} from "../../state/store";
+import {useAppDispatch, useAppSelector} from "../../state/store";
 import {setCurrentRestaurant} from "../../state/features/cart/cartReducer";
 import {openModal} from "../../state/features/modal/modalReducer";
 import {useUser} from "@supabase/auth-helpers-react";
@@ -60,6 +60,7 @@ export default function RestaurantPage({restaurant}: RestaurantPageProps) {
     const dispatch = useAppDispatch()
     const user = useUser()
 
+    const {data: cartData, currentRestaurant, cartLoading} = useAppSelector(state => state.cart)
     const {addToCart} = useMemo<any>(() => router.query as any, [router.query])
 
     useEffect(() => {
@@ -67,13 +68,26 @@ export default function RestaurantPage({restaurant}: RestaurantPageProps) {
     }, [restaurant])
 
     useEffect(() => {
+        if (cartLoading) return;
         if (user !== null && restaurant != null && addToCart != null) {
+            const item = (restaurant.menu.find(category => category.items.find(item => item.id !== addToCart)))?.items.find(item => item.id == addToCart)
+
+            if (cartData != null && cartData.restaurantId !== currentRestaurant!.id) {
+                dispatch(openModal({
+                    type: "ordering-from-other-restaurant-warning",
+                    data: item!
+                }))
+                return
+            }
+
             dispatch(openModal({
                 type: "add-to-cart",
-                data: (restaurant.menu.find(category => category.items.find(item => item.id !== addToCart)))?.items.find(item => item.id == addToCart)!
+                data: item!
             }))
+
+            router.replace(`/restaurants/${restaurant.id}`, undefined, {shallow: true})
         }
-    }, [user, addToCart])
+    }, [user, cartData, addToCart, cartLoading])
 
     if (router.isFallback) {
         return <div>Loading please wait</div>

@@ -196,16 +196,16 @@ async function deleteCart(req: NextApiRequest, res: NextApiResponse<any>) {
 const handler: NextApiHandler = async (req, res) => {
     switch (req.method) {
         case "POST":
-            return createCart(req, res)
+            return withUserSignedIn(createCart(req, res) as unknown as NextApiHandler)
         case "GET":
             return getCart(req, res)
         case "PUT":
-            return updateCart(req, res)
+            return withUserSignedIn(updateCart(req, res) as unknown as NextApiHandler)
         case "DELETE":
-            return deleteCart(req, res)
+            return withUserSignedIn(deleteCart(req, res) as unknown as NextApiHandler)
         default:
             return res.status(405).end()
     }
 }
 
-export default withUserSignedIn(handler)
+export default handler
