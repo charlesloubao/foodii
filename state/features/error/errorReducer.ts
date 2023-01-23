@@ -5,7 +5,7 @@ const errorReducer = createSlice({
     name: "error",
     initialState: {},
     reducers: {
-        onError(state, action: PayloadAction<Error | StripeError>) {
+        onError(state, action: PayloadAction<Error | StripeError | any>) {
             const error = action.payload
             const appError: Error = new Error("An error occurred", {cause: error})
             console.error(appError)

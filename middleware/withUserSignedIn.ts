@@ -7,7 +7,7 @@ export function withUserSignedIn<T>(handler: NextApiHandler<T>): NextApiHandler<
         const {data: {user}} = await supabaseClient.auth.getUser()
 
         if (user == null) {
-            return res.status(401).end()
+            return res.status(403).end()
         }
 
         return handler(req, res)

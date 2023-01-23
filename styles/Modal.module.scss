@@ -10,7 +10,7 @@
   xl:max-w-[25%];
 
   .topBar {
-    @apply flex items-center p-4 border-b;
+    @apply flex items-center p-4 border-b gap-2;
   }
 
   .bottomBar {

@@ -7,7 +7,12 @@ export type AddToCartModalProps = {
     data: MenuItem
 }
 
-export type ModalProps = AddToCartModalProps
+export type OrderingFromOtherRestaurantWarningProps = {
+    type: "ordering-from-other-restaurant-warning",
+    data: MenuItem
+}
+
+export type ModalProps = AddToCartModalProps | OrderingFromOtherRestaurantWarningProps
 
 export type ModalState = {
     props?: ModalProps | null

@@ -1,0 +1,23 @@
+.button {
+  @apply
+  transition-all
+  px-4
+  py-2
+  rounded-md
+  text-white
+  font-semibold;
+
+  &.primary {
+    @apply bg-green-700
+    disabled:bg-gray-400
+    hover:bg-green-800
+    active:bg-green-900;
+  }
+
+  &.secondary {
+    @apply bg-gray-500
+    disabled:bg-gray-400
+    hover:bg-gray-600
+    active:bg-gray-700;
+  }
+}

@@ -1,6 +1,16 @@
 import {HTMLProps, PropsWithChildren} from "react";
+import Styles from '../styles/Button.module.scss'
 
-export default function Button(props: PropsWithChildren<HTMLProps<HTMLButtonElement>>) {
+const variants = {
+    "primary": `${Styles.button} ${Styles.primary}`,
+    "secondary": `${Styles.button} ${Styles.secondary}`
+}
+
+export type ButtonProps = PropsWithChildren<HTMLProps<HTMLButtonElement>> & {
+    variant?: keyof typeof variants
+}
+
+export default function Button(props: ButtonProps) {
     return <button {...props as any}
-                   className={`bg-gray-700 disabled:bg-gray-400 hover:bg-gray-800 active:bg-gray-900 px-4 py-2 rounded-md text-white font-semibold ${props.className}`}>{props.children}</button>
+                   className={`${variants[props.variant ?? "primary"]} ${Styles.button} ${props.className ?? ''}`}>{props.children}</button>
 }

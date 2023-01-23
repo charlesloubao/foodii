@@ -7,6 +7,7 @@ import {MenuItem} from "../../../data/MenuItem";
 import {serializeServerCookie} from "../../../lib/cookieUtils";
 import {SupabaseClient} from "@supabase/supabase-js";
 import {createAdminSupabaseClient} from "../../../lib/supabaseUtils";
+import {withUserSignedIn} from "../../../middleware/withUserSignedIn";
 
 export type GetCartResponse = {
     hasCart: boolean,
@@ -52,7 +53,7 @@ async function getCart(req: NextApiRequest, res: NextApiResponse<GetCartResponse
 
     const {data: {user}} = await client.auth.getUser()
 
-    const data: Cart = await client.from("carts").select("id, subtotal, restaurant:restaurants(id,name, imageURL:image_url)," +
+    const data: Cart = await client.from("carts").select("id, subtotal, restaurantId:restaurant_id, restaurant:restaurants(id,name, imageURL:image_url)," +
         "items:cart_items(id, quantity, subtotal, menuItem:menu_items(name, description, imageURL:image_url, price))")
         .match({"user_id": user!.id, pending: true})
         .maybeSingle()
@@ -97,7 +98,7 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
         const {menuItemId, quantity} = body.addItem
         const item: MenuItem = await client.from("menu_items").select("id, price")
             .match({id: menuItemId, restaurant_id: restaurantId})
-            .single()
+            .maybeSingle()
             .then(({data, error}) => {
                 if (error) throw error
                 return data as any
@@ -162,15 +163,37 @@ async function updateCart(req: NextApiRequest, res: NextApiResponse) {
     }
 }
 
+async function deleteCart(req: NextApiRequest, res: NextApiResponse<any>) {
+    const client: SupabaseClient = createServerSupabaseClient({req, res})
+
+    let cart: Cart | null = await client.from("carts").select("id, subtotal, restaurantId:restaurant_id")
+        .match({pending: true})
+        .maybeSingle()
+        .then(({data, error}) => {
+            if (error) throw error
+            return data as any
+        })
+
+    if (cart == null) return res.status(400).end()
+
+    await client.from("cart_items")
+        .delete()
+        .eq("cart_id", cart.id)
+        .then(({error}) => {
+            if (error) throw error
+        })
+
+    await client.from("carts")
+        .delete()
+        .eq("id", cart.id)
+        .then(({error}) => {
+            if (error) throw error
+        })
+
+    res.status(204).end()
+}
+
 const handler: NextApiHandler = async (req, res) => {
-    const supabaseClient = createServerSupabaseClient({req, res})
-
-    const {data: {user}} = await supabaseClient.auth.getUser()
-
-    if (user == null) {
-        return res.status(403).end()
-    }
-
     switch (req.method) {
         case "POST":
             return createCart(req, res)
@@ -178,10 +201,11 @@ const handler: NextApiHandler = async (req, res) => {
             return getCart(req, res)
         case "PUT":
             return updateCart(req, res)
-            break
+        case "DELETE":
+            return deleteCart(req, res)
         default:
             return res.status(405).end()
     }
 }
 
-export default handler
+export default withUserSignedIn(handler)

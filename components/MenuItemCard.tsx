@@ -1,16 +1,23 @@
 import {MenuItem} from "../data/MenuItem";
 import Styles from '../styles/MenuItemCard.module.scss'
 import Button from "./Button";
-import {useAppDispatch} from "../state/store";
+import {useAppDispatch, useAppSelector} from "../state/store";
 import {openModal} from "../state/features/modal/modalReducer";
 
 export type MenuItemCardProps = {
     item: MenuItem
 }
 export default function MenuItemCard({item}: MenuItemCardProps) {
+    const {currentRestaurant, data: cartData} = useAppSelector(state => state.cart)
     const dispatch = useAppDispatch()
 
     function onAddToCart() {
+        if (cartData != null && cartData.restaurantId !== currentRestaurant!.id) {
+            return dispatch(openModal({
+                type: "ordering-from-other-restaurant-warning",
+                data: item
+            }))
+        }
         dispatch(openModal({
             type: "add-to-cart",
             data: item
