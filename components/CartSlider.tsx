@@ -6,6 +6,7 @@ import Button from "./Button";
 import React, {ReactNode} from "react";
 import {useRouter} from "next/router";
 import OrderSummaryText from "./OrderSummaryText";
+import Link from "next/link";
 
 export default function CartSlider() {
     const router = useRouter()
@@ -34,12 +35,17 @@ export default function CartSlider() {
                                 <span>({cart.data.items.length})</span>}</h1>
                         </div>
                         <div className="flex-1 pl-8 p-4 overflow-y-auto overflow-x-hidden border-b">
+                            <h2 className="heading-3 mb-8">{cart.data!.restaurant.name}</h2>
+
                             {cart.data.items.map((item, index) => (
                                 <CartListItem removable={true} key={`cart_item_${index}`} item={item} index={index}/>))}
+
+                            <Link href={`/restaurants/${cart.data!.restaurantId}`}>
+                                <Button className="inline-block mt-8" onClick={onToggleCartClick} variant={"secondary"}>Add more items</Button>
+                            </Link>
                         </div>
                         <div className="p-4">
                             <h2 className="text-xl font-bold mb-4">Summary</h2>
-                            {/* eslint-disable-next-line react/jsx-no-undef */}
                             <OrderSummaryText cart={cart.data}/>
                             <Button onClick={onCheckoutClick} className="flex items-center justify-between w-full ">
                                 <span>Checkout</span>
