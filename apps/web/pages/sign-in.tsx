@@ -46,7 +46,6 @@ export default function SignIn() {
             <div className=" mb-4">
                 <AppLogo size={32}/>
             </div>
-            <Button className="block w-full mb-2">Sign in with Email</Button>
             <Button onClick={onSignInWithGoogle} className="block w-full">Sign in with Google</Button>
         </div>
     </div>
