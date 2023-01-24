@@ -1,0 +1,22 @@
+{
+  "name": "@foodii/add",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/charlesloubao/food_delivery.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/charlesloubao/food_delivery/issues"
+  },
+  "homepage": "https://github.com/charlesloubao/food_delivery#readme"
+}
