@@ -1,7 +1,7 @@
 import axios from "axios";
 import {useRouter} from "next/router";
 import {useEffect, useMemo, useRef} from "react";
-import {useSupabaseClient} from "@supabase/auth-helpers-react";
+import {useSupabaseClient, useUser} from "@supabase/auth-helpers-react";
 import {Order} from "../data/Order";
 import update from "immutability-helper";
 import {RealtimeChannel} from "@supabase/realtime-js";
@@ -9,6 +9,7 @@ import {NextPage} from "next";
 
 export default function ConfirmPaymentCallback() {
     const router = useRouter()
+    const user = useUser()
     const paymentIntent = useMemo<string>(() => router.query.payment_intent as string, [router])
     const supabaseClient = useSupabaseClient()
     const channel = useRef<RealtimeChannel>()
@@ -36,14 +37,14 @@ export default function ConfirmPaymentCallback() {
     }
 
     useEffect(() => {
-        if (paymentIntent == null) return
+        if (paymentIntent == null || user == null) return
 
         findOrderByPaymentIntent()
         return () => {
             channel.current && supabaseClient.removeChannel(channel.current)
         }
 
-    }, [paymentIntent])
+    }, [paymentIntent, user])
 
     if (paymentIntent == null) return <></>
 
