@@ -1,16 +1,20 @@
 import {Menu, ShoppingCart,} from "lucide-react";
 import Link from "next/link";
 import CartButton from "./CartButton";
-import {useAppSelector} from "../state/store";
+import {useAppDispatch, useAppSelector} from "../state/store";
 import AppLogo from "./AppLogo";
 import Button from "./Button";
 import {useSupabaseClient, useUser} from "@supabase/auth-helpers-react";
 import {useRouter} from "next/router";
+import {useSidebar} from "./Sidebar";
 
 export default function Navbar() {
     const router = useRouter()
     const supabase = useSupabaseClient()
     const user = useUser()
+
+    const {toggleSidebar} = useSidebar()
+
     async function signOut() {
         await supabase.auth.signOut()
         router.push("/")
@@ -20,7 +24,7 @@ export default function Navbar() {
         <div>
             <div className="px-4 py-2 border-b flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Menu/>
+                    <button onClick={() => toggleSidebar(true)}><Menu/></button>
                     <Link href="/">
                         <AppLogo/>
                     </Link>

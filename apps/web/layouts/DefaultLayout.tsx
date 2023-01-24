@@ -5,18 +5,22 @@ import useSWR from 'swr'
 import {AppDispatch, useAppDispatch} from "../state/store";
 import {onCartUpdated, setCartLoading} from "../state/features/cart/cartReducer";
 import {Cart} from "../data/Cart";
+import Sidebar, {SidebarProvider} from "../components/Sidebar";
 
 export default function DefaultLayout({children}: PropsWithChildren<any>) {
     return <>
-        <div className="w-full h-full flex flex-col">
-            <header>
-                <Navbar/>
-            </header>
-            <main className="flex-1">
-                {children}
-            </main>
-        </div>
-        <CartSlider/>
+        <SidebarProvider>
+            <div className="w-full h-full flex flex-col">
+                <header>
+                    <Navbar/>
+                </header>
+                <Sidebar/>
+                <main className="flex-1">
+                    {children}
+                </main>
+            </div>
+            <CartSlider/>
+        </SidebarProvider>
     </>
 }
 
