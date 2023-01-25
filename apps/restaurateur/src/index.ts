@@ -24,7 +24,7 @@ function processOrder(order: any) {
             .then(({error}) => {
                 if(error) throw error
             })
-    }, 60000)
+    }, 120000)
 }
 
 supabaseClient.channel(`*`)
