@@ -10,7 +10,7 @@ export default function Home() {
                 <title>Food Delivery</title>
             </Head>
             <div className="app-container">
-                <h1 className="heading-1 mb-4">Restaurants near you</h1>
+                <h1 className="heading-1 mb-4">Top restaurants in New York</h1>
                 <PopularRestaurantList/>
 
             </div>

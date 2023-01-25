@@ -16,5 +16,8 @@ export type Order = {
     deliveredAt: string | null,
     restaurant: Restaurant,
     cart: Cart,
-    status: OrderStatus
+    status: OrderStatus,
+    total: number,
+    itemsCount: number
+    inProgress: boolean
 }

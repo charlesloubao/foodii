@@ -15,7 +15,7 @@ function processOrder(order: any) {
             .then(({error}) => {
                 if(error) throw error
             })
-    }, 2000)
+    }, 60000)
 
     setTimeout(() => {
         return supabaseClient.from("orders")
@@ -24,7 +24,7 @@ function processOrder(order: any) {
             .then(({error}) => {
                 if(error) throw error
             })
-    }, 4000)
+    }, 60000)
 }
 
 supabaseClient.channel(`*`)
