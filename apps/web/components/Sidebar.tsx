@@ -1,4 +1,12 @@
-import {createContext, createRef, PropsWithChildren, useContext, useEffect, useState} from "react";
+import React, {
+    createContext,
+    createRef,
+    FocusEventHandler,
+    PropsWithChildren,
+    useContext,
+    useEffect,
+    useState
+} from "react";
 import {useUser} from "@supabase/auth-helpers-react";
 import {ChevronLeft, ChevronRight, ChevronsLeft, ConciergeBell, User as UserIcon, Utensils} from "lucide-react";
 import Link from "next/link";
@@ -52,10 +60,28 @@ export default function Sidebar() {
         }
     }, [showSidebar])
 
+    function onSidebarFocusLost(event: React.FocusEvent) {
+        const target = event.relatedTarget
+
+        console.log({target})
+
+        if (target == null) {
+            return sidebarContent.current!.focus({})
+        }
+
+        const isChildOfSidebar = target.closest("[data-sidebar-container]") != null
+        const isClickable = target.getAttribute("onclick") != null || target.getAttribute("href") != null
+
+        if (!isChildOfSidebar || isClickable) {
+            toggleSidebar(false)
+        }
+    }
+
     return <div
         className={`transition-all duration-300 z-20 w-full h-full fixed top-0 left-0 bg-black ${showBackground ? 'bg-opacity-50' : 'bg-opacity-0'} ${showSidebar ? '' : 'hidden'}`}>
         <div
-            onBlur={() => toggleSidebar(false)}
+            data-sidebar-container={true}
+            onBlur={onSidebarFocusLost}
             ref={sidebarContent}
             tabIndex={0}
             className={`transition-all duration-300 w-5/6 md:w-1/3 lg:w-1/4 xl:w-1/5 h-full bg-white fixed top-0 ${showContent ? "left-0" : "-left-full"}`}>
