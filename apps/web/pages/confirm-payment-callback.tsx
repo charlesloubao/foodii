@@ -52,6 +52,16 @@ export default function ConfirmPaymentCallback() {
 
     }, [paymentIntent, user])
 
+    useEffect(() => {
+        let id = setTimeout(() => {
+            window.location.reload()
+        }, 2000)
+
+        return () => {
+            clearTimeout(id)
+        }
+    }, [])
+
     if (paymentIntent == null) return <></>
 
     return <div className={"flex items-center justify-center text-xl font-bold w-full h-full"}>
