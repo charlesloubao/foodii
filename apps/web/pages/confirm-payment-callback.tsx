@@ -6,6 +6,7 @@ import {Order} from "../data/Order";
 import update from "immutability-helper";
 import {RealtimeChannel} from "@supabase/realtime-js";
 import {NextPage} from "next";
+import {useSWRConfig} from "swr";
 
 export default function ConfirmPaymentCallback() {
     const router = useRouter()
@@ -13,6 +14,7 @@ export default function ConfirmPaymentCallback() {
     const paymentIntent = useMemo<string>(() => router.query.payment_intent as string, [router])
     const supabaseClient = useSupabaseClient()
     const channel = useRef<RealtimeChannel>()
+    const {mutate} = useSWRConfig()
 
     async function findOrderByPaymentIntent() {
         const orderId = await supabaseClient.from("orders")
@@ -21,7 +23,10 @@ export default function ConfirmPaymentCallback() {
             .maybeSingle()
             .then(response => response.data?.id)
 
-        if (orderId != null) return router.replace("/track-order?id=" + orderId)
+        if (orderId != null) {
+            await mutate("/api/cart")
+            return router.replace("/track-order?id=" + orderId)
+        }
 
         channel.current = supabaseClient.channel(`*`)
             .on("postgres_changes",
@@ -31,7 +36,8 @@ export default function ConfirmPaymentCallback() {
                     table: "orders",
                     filter: "stripe_payment_intent_id=eq." + paymentIntent
                 },
-                (event) => {
+                async (event) => {
+                    await mutate("/api/cart")
                     router.push("/track-order?id=" + event.new.id)
                 }).subscribe()
     }
@@ -48,7 +54,9 @@ export default function ConfirmPaymentCallback() {
 
     if (paymentIntent == null) return <></>
 
-    return <></>
+    return <div className={"flex items-center justify-center text-xl font-bold w-full h-full"}>
+        Please wait
+    </div>
 }
 
 ConfirmPaymentCallback.getLayout = (page: NextPage) => page
