@@ -30,7 +30,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 }
 export default function SignIn() {
     const dispatch = useAppDispatch()
-    const [signingIn, setSigningIn] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(false)
 
     const router = useRouter()
     const redirectTo = useMemo<string>(() => router.query.redirectTo as string ?? getRedirectURL("/"), [router.query])
@@ -39,14 +39,14 @@ export default function SignIn() {
     const [email, setEmail] = useState<string>("")
     const [password, setPassword] = useState<string>("")
 
-    async function signInWithPassword(e: any) {
+    async function signUpWithPassword(e: any) {
         e.preventDefault()
-        if (signingIn) return
+        if (loading) return
 
-        setSigningIn(true)
+        setLoading(true)
 
         try {
-            const success = await supabase.auth.signInWithPassword({email, password})
+            const success = await supabase.auth.signUp({email, password})
                 .then(({error}) => {
                     if (error) {
                         throw error
@@ -59,7 +59,7 @@ export default function SignIn() {
             }
         } catch (e) {
             dispatch(onError(e))
-            setSigningIn(false)
+            setLoading(false)
         } finally {
         }
     }
@@ -68,20 +68,16 @@ export default function SignIn() {
         <div className={"w-full md:w-1/2 lg:w-1/3 xl:w-1/4 m-4  shadow p-4 bg-white rounded-md"}>
             <div className="text-center mb-4">
                 <AppLogo size={32}/>
-                <p>Test account: <br/> Email: foodii.test@charlesloubao.com
-                    <br/>
-                    password: p@$$w0rd
-                </p>
             </div>
-            <form onSubmit={signInWithPassword} className={"mb-4"}>
-                <TextField placeholder={"Email"} value={email} onChange={setEmail} required className={"mb-4"} label={"Email"}
+            <form onSubmit={signUpWithPassword} className={"mb-4"}>
+                <TextField value={email} onChange={setEmail} required className={"mb-4"} label={"Email"}
                            type={"email"}/>
                 <TextField value={password} onChange={setPassword} className={"mb-4"} required label={"Password"}
-                           type={"password"} placeholder={"Password"}/>
+                           type={"password"}/>
 
                 <div>
-                    <Button disabled={signingIn}>
-                        {signingIn ? <span className={"flex items-center"}>
+                    <Button disabled={loading}>
+                        {loading ? <span className={"flex items-center"}>
                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
                              fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
@@ -90,19 +86,13 @@ export default function SignIn() {
                                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                         Please wait...
-                    </span> : "Sign in"}
+                    </span> : "Sign up"}
                     </Button>
 
-                    <p className={"mt-4 mb-2"}>Don&apos;t have an account? <Link href={`/sign-up?redirectTo=${redirectTo}`}>Create one instead</Link></p>
-                    <p>Forgot your password? <Link href={`/reset-password?redirectTo=${redirectTo}`}>Reset password</Link></p>
+                    <p className={"mt-4"}>Already have an account? <Link href={"/sign-in"}>Sign in instead</Link></p>
 
                 </div>
             </form>
-            <p className={"mb-4"}>The test account might be used by other people which may affect your experience so I
-                recommend creating one with a
-                temporary
-                email from <a target={"_blank"} rel={"noreferrer"}
-                              href={"https://temp-mail.org/en/"}>https://temp-mail.org/en/</a></p>
             <Link className={"font-semibold underline"} href={"/"}>Return home</Link>
         </div>
 
