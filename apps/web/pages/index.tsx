@@ -1,9 +1,10 @@
 import PopularRestaurantList from "../components/PopularRestaurantList";
 import DefaultLayout from "../layouts/DefaultLayout";
 import Head from 'next/head'
+import {useSupabaseClient} from "@supabase/auth-helpers-react";
+import {useEffect} from "react";
 
 export default function Home() {
-
     return (
         <>
             <Head>

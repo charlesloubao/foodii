@@ -7,6 +7,7 @@ import Button from "./Button";
 import {useSupabaseClient, useUser} from "@supabase/auth-helpers-react";
 import {useRouter} from "next/router";
 import {useSidebar} from "./Sidebar";
+import {getRedirectURL} from "../lib/redirectUtils";
 
 export default function Navbar() {
     const router = useRouter()
@@ -20,6 +21,10 @@ export default function Navbar() {
         router.push("/")
     }
 
+    function signIn() {
+        router.push(`/sign-in?redirectTo=${getRedirectURL(router.asPath)}`)
+    }
+
     return <>
         <div>
             <div className="px-4 py-2 border-b flex items-center justify-between">
@@ -31,7 +36,8 @@ export default function Navbar() {
                 </div>
                 <div className="flex items-center gap-4">
                     <CartButton/>
-                    {user && <Button onClick={signOut}>Sign out</Button>}
+                    {user ? <Button variant="secondary" onClick={signOut}>Sign out</Button>
+                        : <Button variant="primary" onClick={signIn}>Sign in</Button>}
                 </div>
             </div>
         </div>
