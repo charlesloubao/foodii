@@ -18,6 +18,33 @@ import {AddressElement, Elements, ElementsConsumer, PaymentElement} from "@strip
 import {loadStripe} from "@stripe/stripe-js";
 import CheckoutForm from "../components/CheckoutForm";
 
+const testCards = [
+    {
+        label: "Visa",
+        number: "4242 4242 4242 4242",
+        cvc: "Any 3 digits",
+        exp: "Any future date"
+    },
+    {
+        label: "Master card",
+        number: "5555 5555 5555 4444",
+        cvc: "Any 3 digits",
+        exp: "Any future date"
+    },
+    {
+        label: "Test card declined",
+        number: "4000 0000 0000 0002",
+        cvc: "Any 3 digits",
+        exp: "Any future date"
+    },
+    {
+        label: "Test 3DS Secure authentication",
+        number: "4000 0027 6000 3184",
+        cvc: "Any 3 digits",
+        exp: "Any future date"
+    }
+]
+
 export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const supabase = createServerSupabaseClient(context)
@@ -53,7 +80,6 @@ export default function Checkout() {
     const cart = useAppSelector(state => state.cart)
     const user = useUser()
 
-
     async function fetchPaymentIntentSecret() {
         try {
             if (fetchingPaymentSecret.current) return
@@ -65,7 +91,7 @@ export default function Checkout() {
             setPaymentIntentSecret(clientSecret)
 
         } catch (e: any) {
-            dispatch(onError(e))
+            router.push("/")
         } finally {
             fetchingPaymentSecret.current = false
         }
@@ -106,6 +132,19 @@ export default function Checkout() {
                     <div className={"xl:w-3/5 mx-auto"}>
 
                         <h1 className="heading-1 mb-8">Checkout</h1>
+
+                        <h2 className="heading-2 mb-6"> Test cards</h2>
+                        <div className={"w-full mb-8 overflow-x-auto"}>
+                            <table className={"table-fixed border-collapse md:w-full"}>
+                                {testCards.map(card => (<tr key={card.number}>
+                                    <td className={"min-w-[200px] md:min-w-auto border border-gray-300 px-4 py-2"}><strong>{card.label}</strong>
+                                    </td>
+                                    <td className={"min-w-[200px] md:min-w-auto border border-gray-300 px-4 py-2"}>{card.number}</td>
+                                    <td className={"min-w-[200px] md:min-w-auto border border-gray-300 px-4 py-2"}>{card.cvc}</td>
+                                    <td className={"min-w-[200px] md:min-w-auto border border-gray-300 px-4 py-2"}>{card.exp}</td>
+                                </tr>))}
+                            </table>
+                        </div>
 
                         <CheckoutForm/>
 

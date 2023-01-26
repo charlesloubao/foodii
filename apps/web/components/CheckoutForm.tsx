@@ -18,12 +18,6 @@ export default function CheckoutForm() {
 
     const [placingOrder, setPlacingOrder] = useState<boolean>(false)
 
-    const [address, setAddress] = useState<string>("")
-    const [addressError, setAddressError] = useState<string>("")
-
-    const [phoneNumber, setPhoneNumber] = useState<string>("")
-    const [phoneNumberError, setPhoneNumberError] = useState<string>("")
-
     const [instructions, setInstructions] = useState<string>("")
 
     async function onPlaceOrderClick() {
@@ -70,6 +64,7 @@ export default function CheckoutForm() {
 
             <div className="border rounded-lg p-4">
                 <h2 className="heading-2 mb-6">Payment information</h2>
+
                 <PaymentElement/>
             </div>
 
