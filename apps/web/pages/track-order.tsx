@@ -3,7 +3,17 @@ import {useRouter} from "next/router";
 import React, {useEffect, useMemo, useState} from "react";
 import {useSupabaseClient} from "@supabase/auth-helpers-react";
 import {Order, OrderStatus} from "../data/Order";
-import {ArrowLeft, CheckCircle, CheckCircle2, LocateIcon, MapPin, PersonStanding, Phone, User} from "lucide-react";
+import {
+    ArrowLeft,
+    CheckCircle,
+    CheckCircle2,
+    Info,
+    LocateIcon,
+    MapPin,
+    PersonStanding,
+    Phone,
+    User
+} from "lucide-react";
 import moment from "moment";
 import OrderSummaryText from "../components/OrderSummaryText";
 import CartListItem from "../components/CartListItem";
@@ -131,6 +141,12 @@ export default function TrackOrder() {
             <div className="hidden lg:block"></div>
         </div>
         <div className="flex-1 overflow-auto md:w-2/3 lg:w-1/2 mx-auto p-4">
+            <div className={"flex items-center gap-4 border-black  border-2 font-semibold mb-8 text-lg p-4 rounded-md"}>
+                <Info size={32}/>
+                <p className={"flex-1"}>Restaurateur (order fulfilment bot) will update the order status 1 minute at a time.
+                    I made it this way to simulate what a real order fulfilment process may look like from
+                    the user&apos; perspective.</p>
+            </div>
             <h1 className="heading-1 mb-4">{order.restaurant?.name}</h1>
             <div className="mb-12">
                 <div className="font-semibold">Order placed
