@@ -34,7 +34,7 @@ export default function Orders() {
         <h1 className="heading-1 mb-4">Orders</h1>
         <SWRResult response={orders}
                    renderError={() => <div>Failed to load orders</div>}
-                   renderData={(data) => <div className="flex flex-col gap-4">
+                   renderData={(data) => <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                        {data.map(order => <OrderListItem order={order} key={order.id}/>)}
                    </div>}
                    renderLoading={() => <div>Loading orders...</div>}/>

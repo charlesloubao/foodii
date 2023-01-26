@@ -81,9 +81,6 @@ export default function Sidebar() {
                 <Link href={"/orders"}>
                     <SidebarItem selected={router.pathname === "/orders"} icon={<ConciergeBell/>} label={"My orders"}/>
                 </Link>
-                <Link href={"/account"}>
-                    <SidebarItem selected={router.pathname === "/account"} icon={<UserIcon/>} label={"My account"}/>
-                </Link>
             </div>
         </div>
     </div>
